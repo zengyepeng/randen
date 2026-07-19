@@ -1,0 +1,138 @@
+/* ===== Mobile: 480px Single Column ===== */
+
+@media (max-width: 480px) {
+  html,
+  body {
+    overflow: auto;
+  }
+
+  .topbar {
+    padding: 0 8px;
+  }
+
+  .brand-logo {
+    width: 74px;
+    max-height: 24px;
+  }
+
+  .book-identity strong {
+    font-size: 10px;
+    max-width: 18vw;
+  }
+
+  .topbar .primary-button {
+    min-height: 44px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .topbar .quiet-button {
+    min-height: 44px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .nav-item {
+    min-width: 52px;
+    min-height: 44px;
+    padding: 0 6px;
+    font-size: 11px;
+  }
+
+  .document-item {
+    min-width: 120px;
+    min-height: 44px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .metric {
+    min-height: 72px;
+    padding: 10px 12px;
+  }
+
+  .metric strong {
+    margin-top: 10px;
+    font-size: 20px;
+  }
+
+  .progress-band {
+    padding: 14px;
+  }
+
+  .next-action-band {
+    padding: 14px;
+  }
+
+  .dashboard-columns {
+    gap: 20px;
+  }
+
+  .tool-card {
+    padding: 14px;
+  }
+
+  .chat-log {
+    padding: 12px;
+    min-height: 240px;
+  }
+
+  .chat-composer {
+    padding: 10px;
+  }
+
+  .document-editor {
+    padding: 20px 14px 60px;
+    font-size: 15px;
+  }
+
+  .write-dialog {
+    width: calc(100vw - 16px);
+  }
+
+  .write-dialog form {
+    padding: 16px;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dialog-actions button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .toast {
+    right: 8px;
+    bottom: 8px;
+    max-width: calc(100vw - 16px);
+  }
+
+  /* Emotion dashboard 480 */
+  .arc-chart {
+    height: 160px;
+  }
+
+  .gun-item {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .gun-item .gun-chapter,
+  .gun-item .gun-status {
+    justify-self: start;
+  }
+
+  .voice-bar-row {
+    grid-template-columns: 70px 1fr 40px;
+  }
+}

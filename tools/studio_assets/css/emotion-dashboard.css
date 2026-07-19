@@ -1,0 +1,279 @@
+/* ===== Emotion Dashboard Panel ===== */
+
+/* ---- Container ---- */
+.emotion-dashboard {
+  width: min(100%, 1160px);
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 34px clamp(24px, 4vw, 54px) 64px;
+}
+
+.emotion-dashboard[hidden] {
+  display: none;
+}
+
+/* ---- Emotion Arc Chart ---- */
+.emotion-arc {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.emotion-arc h2 {
+  margin-bottom: 16px;
+}
+
+.arc-chart {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  padding: 12px 0;
+  border-bottom: 2px solid var(--border-strong);
+  overflow: visible;
+}
+
+.arc-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+}
+
+.arc-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Annotation dots */
+.arc-point {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--accent-strong);
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translate(-50%, 50%);
+  cursor: pointer;
+  transition: transform 150ms ease;
+}
+
+.arc-point:hover {
+  transform: translate(-50%, 50%) scale(1.4);
+}
+
+.arc-point.peak {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+
+.arc-point.valley {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.arc-point.turning {
+  border-color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.arc-label {
+  position: absolute;
+  bottom: -22px;
+  left: -40px;
+  width: 80px;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ---- Reader Retention ---- */
+.retention-section {
+  margin-top: 10px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.retention-section h2 {
+  margin-bottom: 14px;
+}
+
+.risk-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.risk-card {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface-subtle);
+}
+
+.risk-card h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.risk-card .risk-level {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.risk-card.green .risk-level {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.risk-card.yellow .risk-level {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.risk-card.red .risk-level {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.risk-card p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+/* ---- Chekhov's Gun ---- */
+.chekhov-section {
+  margin-top: 10px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.chekhov-section h2 {
+  margin-bottom: 14px;
+}
+
+.gun-list {
+  display: grid;
+  gap: 8px;
+}
+
+.gun-item {
+  display: grid;
+  min-height: 48px;
+  padding: 10px 12px;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-subtle);
+}
+
+.gun-item .gun-name {
+  font-size: 13px;
+  font-weight: 620;
+  color: var(--text);
+}
+
+.gun-item .gun-chapter {
+  color: var(--faint);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+}
+
+.gun-item .gun-status {
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.gun-item .gun-status.pending {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.gun-item .gun-status.planned {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+/* ---- Character Voice Health ---- */
+.voice-section {
+  margin-top: 10px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.voice-section h2 {
+  margin-bottom: 14px;
+}
+
+.voice-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.voice-bar-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 60px;
+  align-items: center;
+  gap: 12px;
+}
+
+.voice-bar-row .voice-name {
+  font-size: 12px;
+  font-weight: 620;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.voice-bar-track {
+  width: 100%;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--surface-strong);
+}
+
+.voice-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 400ms ease;
+}
+
+.voice-bar-fill.distinct {
+  background: var(--success);
+}
+
+.voice-bar-fill.similar {
+  background: var(--danger);
+}
+
+.voice-bar-fill.moderate {
+  background: var(--accent);
+}
+
+.voice-bar-row .voice-score {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  text-align: right;
+}

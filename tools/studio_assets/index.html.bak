@@ -5,15 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Randen Studio</title>
-  <link rel="stylesheet" href="/css/variables.css">
-  <link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/layout.css">
-  <link rel="stylesheet" href="/css/components-core.css">
-  <link rel="stylesheet" href="/css/components-forms.css">
-  <link rel="stylesheet" href="/css/views.css">
-  <link rel="stylesheet" href="/css/emotion-dashboard.css">
-  <link rel="stylesheet" href="/css/mobile.css">
-  <link rel="stylesheet" href="/css/mobile-small.css">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <a class="skip-link" href="#workspace-main">跳到正文</a>
@@ -37,29 +29,25 @@
 
     <div class="workspace-shell">
       <aside class="sidebar" aria-label="作品导航">
-        <button id="sidebar-toggle" class="sidebar-toggle mobile-only" type="button" aria-expanded="false" aria-controls="sidebar-body">作品导航</button>
-        <div id="sidebar-body" class="sidebar-body">
-          <nav class="view-nav" aria-label="工作区">
-            <button class="nav-item active" type="button" data-view="dashboard"><span>D</span>总览</button>
-            <button class="nav-item" type="button" data-view="chapters"><span>M</span>正文</button>
-            <button class="nav-item" type="button" data-view="story"><span>S</span>故事</button>
-            <button class="nav-item" type="button" data-view="characters"><span>C</span>人物</button>
-            <button class="nav-item" type="button" data-view="world"><span>W</span>世界</button>
-            <button class="nav-item" type="button" data-view="agents"><span>A</span>AI 协作</button>
-            <button class="nav-item" type="button" data-view="continuity"><span>Q</span>连续性</button>
-            <button class="nav-item" type="button" data-view="tools"><span>T</span>工具箱</button>
-            <button class="nav-item" type="button" data-view="emotion"><span>E</span>情感</button>
-          </nav>
-          <div class="sidebar-divider"></div>
-          <div class="document-heading">
-            <span id="document-group-title">最近章节</span>
-            <span id="document-count">0</span>
-          </div>
-          <div id="document-list" class="document-list" role="list"></div>
-          <div class="sidebar-footer">
-            <a class="export-link" href="/api/export?format=md">导出 MD</a>
-            <a class="export-link" href="/api/export?format=txt">导出 TXT</a>
-          </div>
+        <nav class="view-nav" aria-label="工作区">
+          <button class="nav-item active" type="button" data-view="dashboard"><span>D</span>总览</button>
+          <button class="nav-item" type="button" data-view="chapters"><span>M</span>正文</button>
+          <button class="nav-item" type="button" data-view="story"><span>S</span>故事</button>
+          <button class="nav-item" type="button" data-view="characters"><span>C</span>人物</button>
+          <button class="nav-item" type="button" data-view="world"><span>W</span>世界</button>
+          <button class="nav-item" type="button" data-view="agents"><span>A</span>AI 协作</button>
+          <button class="nav-item" type="button" data-view="continuity"><span>Q</span>连续性</button>
+          <button class="nav-item" type="button" data-view="tools"><span>T</span>工具箱</button>
+        </nav>
+        <div class="sidebar-divider"></div>
+        <div class="document-heading">
+          <span id="document-group-title">最近章节</span>
+          <span id="document-count">0</span>
+        </div>
+        <div id="document-list" class="document-list" role="list"></div>
+        <div class="sidebar-footer">
+          <a class="export-link" href="/api/export?format=md">导出 MD</a>
+          <a class="export-link" href="/api/export?format=txt">导出 TXT</a>
         </div>
       </aside>
 
@@ -72,15 +60,20 @@
             </div>
             <button id="model-state" class="status-pill" type="button" title="配置当前 Studio 会话的模型">模型未配置</button>
           </div>
+
           <div class="metric-grid" aria-label="写作统计">
             <article class="metric"><span>正文</span><strong id="metric-words">0</strong><small>字</small></article>
             <article class="metric"><span>章节</span><strong id="metric-chapters">0</strong><small>章</small></article>
             <article class="metric"><span>人物</span><strong id="metric-characters">0</strong><small>人</small></article>
             <article class="metric"><span>待处理伏笔</span><strong id="metric-hooks">0</strong><small>条</small></article>
           </div>
+
           <section class="progress-band" aria-labelledby="progress-title">
             <div class="progress-copy">
-              <div><p class="eyebrow">MANUSCRIPT</p><h2 id="progress-title">全书进度</h2></div>
+              <div>
+                <p class="eyebrow">MANUSCRIPT</p>
+                <h2 id="progress-title">全书进度</h2>
+              </div>
               <strong id="progress-percent">0%</strong>
             </div>
             <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -91,6 +84,7 @@
               <span id="progress-target">目标未设置</span>
             </div>
           </section>
+
           <div class="dashboard-columns">
             <section class="dashboard-section" aria-labelledby="readiness-title">
               <div class="subsection-heading">
@@ -107,8 +101,12 @@
               <div id="recent-chapters" class="recent-chapters"></div>
             </section>
           </div>
+
           <section class="next-action-band" aria-labelledby="next-action-title">
-            <div><p class="eyebrow">NEXT</p><h2 id="next-action-title">下一步</h2></div>
+            <div>
+              <p class="eyebrow">NEXT</p>
+              <h2 id="next-action-title">下一步</h2>
+            </div>
             <div id="next-actions" class="next-actions"></div>
           </section>
         </section>
@@ -159,7 +157,7 @@
             <div>
               <p class="eyebrow">CONTINUITY</p>
               <h1 id="continuity-title">连续性控制台</h1>
-              <p class="section-description">查看真相文件、伏笔与章节 workflow。这里展示运行态，不替代 src/ 中的人工确认真源。</p>
+              <p class="section-description">查看真相文件、伏笔与章节 workflow。这里展示运行态，不替代 `src/` 中的人工确认真源。</p>
             </div>
             <button id="continuity-refresh" class="quiet-button" type="button">刷新</button>
           </div>
@@ -257,35 +255,9 @@
               </form>
               <p id="source-status" class="form-status" role="status"></p>
               <div id="source-list" class="source-list"></div>
-              <pre id="source-report" class="context-preview">选择"审阅"后在这里显示来源报告</pre>
+              <pre id="source-report" class="context-preview">选择“审阅”后在这里显示来源报告</pre>
             </section>
           </div>
-        </section>
-
-        <section id="emotion-view" class="emotion-dashboard" hidden aria-labelledby="emotion-title">
-          <div class="section-title-row workspace-view-header">
-            <div>
-              <p class="eyebrow">ANALYTICS</p>
-              <h1 id="emotion-title">情感仪表盘</h1>
-              <p class="section-description">追踪情感弧线、读者留存风险、契诃夫之枪和人物声音健康度。当前展示模拟数据，真实 API 接口已预留。</p>
-            </div>
-          </div>
-          <section class="emotion-arc">
-            <h2>📈 情感弧线图</h2>
-            <div id="emotion-arc-chart" class="arc-chart"></div>
-          </section>
-          <section class="retention-section">
-            <h2>📊 读者留存预测</h2>
-            <div id="emotion-retention" class="risk-cards"></div>
-          </section>
-          <section class="chekhov-section">
-            <h2>🔫 契诃夫之枪</h2>
-            <div id="emotion-guns" class="gun-list"></div>
-          </section>
-          <section class="voice-section">
-            <h2>🎤 人物声音健康度</h2>
-            <div id="emotion-voice" class="voice-bars"></div>
-          </section>
         </section>
       </main>
 
@@ -324,7 +296,10 @@
   <dialog id="write-dialog" class="write-dialog">
     <form id="write-form" method="dialog">
       <div class="dialog-header">
-        <div><p class="eyebrow">DANTE PIPELINE</p><h2>写下一章</h2></div>
+        <div>
+          <p class="eyebrow">DANTE PIPELINE</p>
+          <h2>写下一章</h2>
+        </div>
         <button id="write-close" class="icon-button" type="button" aria-label="关闭">×</button>
       </div>
       <label for="write-guidance">本章要求</label>
@@ -342,7 +317,10 @@
   <dialog id="model-dialog" class="write-dialog">
     <form id="model-form" method="dialog">
       <div class="dialog-header">
-        <div><p class="eyebrow">SESSION MODEL</p><h2>配置模型连接</h2></div>
+        <div>
+          <p class="eyebrow">SESSION MODEL</p>
+          <h2>配置模型连接</h2>
+        </div>
         <button id="model-close" class="icon-button" type="button" aria-label="关闭">×</button>
       </div>
       <p class="dialog-note">配置只保存在当前 Studio 服务进程，不写入项目或浏览器存储。</p>
@@ -367,7 +345,10 @@
   <dialog id="project-dialog" class="write-dialog setup-dialog">
     <form id="project-form" method="dialog">
       <div class="dialog-header">
-        <div><p class="eyebrow">NEW NOVEL</p><h2>创建第一本小说</h2></div>
+        <div>
+          <p class="eyebrow">NEW NOVEL</p>
+          <h2>创建第一本小说</h2>
+        </div>
       </div>
       <p class="dialog-note">Studio 会在当前目录创建单一真源、运行态、手稿和长期记忆结构。</p>
       <label for="project-title">书名</label>
@@ -382,7 +363,10 @@
   <dialog id="review-dialog" class="write-dialog review-dialog">
     <div class="review-dialog-content">
       <div class="dialog-header">
-        <div><p class="eyebrow">REVIEW</p><h2>章节审稿</h2></div>
+        <div>
+          <p class="eyebrow">REVIEW</p>
+          <h2>章节审稿</h2>
+        </div>
         <button id="review-close" class="icon-button" type="button" aria-label="关闭">×</button>
       </div>
       <div id="review-loading" class="review-loading" role="status">正在执行规则检查与深度审稿…</div>
@@ -398,6 +382,6 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="/js/app.js"></script>
+  <script src="/app.js" defer></script>
 </body>
 </html>
