@@ -1,0 +1,183 @@
+"""Randen Studio HTTP 服务器——请求处理、路由分发、静态资源服务。"""
+
+from __future__ import annotations
+
+import json
+from functools import partial
+from http import HTTPStatus
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Any
+from urllib.parse import parse_qs, quote, urlparse
+
+from .app import MAX_DOCUMENT_BYTES, StudioApplication, StudioError
+from .handlers import handle_document_write, handle_export
+from .routes import GET_ROUTES, POST_ROUTES
+from .templates import serve_brand_logo_content, serve_static_content
+
+WRITE_HEADER = "X-Randen-Studio"
+STATIC_ROOT = Path(__file__).parent.parent / "studio_assets"
+
+
+class StudioRequestHandler(SimpleHTTPRequestHandler):
+    """Randen Studio HTTP 请求处理器。"""
+
+    server_version = "RandenStudio/5.8"
+
+    @property
+    def app(self) -> StudioApplication:
+        return getattr(self.server, "app")  # type: ignore[no-any-return]
+
+    def do_GET(self) -> None:
+        parsed = urlparse(self.path)
+        query = {k: v[0] for k, v in parse_qs(parsed.query).items()}
+        try:
+            if parsed.path == "/api/export":
+                self.app.require_project()
+                format_name = parse_qs(parsed.query).get("format", ["md"])[0]
+                result = handle_export(self.app, {"format": format_name})
+                self._send_export(result)
+                return
+            if parsed.path in {"/brand/logo.svg", "/brand/logo-dark.svg"}:
+                dark = parsed.path.endswith("dark.svg")
+                content, content_type = serve_brand_logo_content(STATIC_ROOT, dark)
+                self._send_binary(content, content_type)
+                return
+            handler, needs_project = GET_ROUTES.get(parsed.path, (None, False))
+            if handler is not None:
+                if needs_project:
+                    self.app.require_project()
+                self._json(handler(self.app, query))
+                return
+            self._serve_static(parsed.path)
+        except StudioError as exc:
+            self._json({"error": str(exc)}, status=exc.status)
+        except Exception:
+            self._json({"error": "Studio 内部错误"}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    def do_PUT(self) -> None:
+        try:
+            self._require_write_header()
+            if urlparse(self.path).path != "/api/document":
+                raise StudioError("接口不存在", HTTPStatus.NOT_FOUND)
+            self.app.require_project()
+            self._json(handle_document_write(self.app, self._body_json()))
+        except StudioError as exc:
+            self._json({"error": str(exc)}, status=exc.status)
+
+    def do_POST(self) -> None:
+        try:
+            self._require_write_header()
+            route = urlparse(self.path).path
+            handler, needs_project = POST_ROUTES.get(route, (None, False))
+            if handler is None:
+                raise StudioError("接口不存在", HTTPStatus.NOT_FOUND)
+            if needs_project:
+                self.app.require_project()
+            self._json(handler(self.app, self._body_json()))
+        except StudioError as exc:
+            self._json({"error": str(exc)}, status=exc.status)
+
+    def do_OPTIONS(self) -> None:
+        self.send_response(HTTPStatus.METHOD_NOT_ALLOWED)
+        self._security_headers()
+        self.end_headers()
+
+    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
+        if self.path.startswith("/api/") and not self.path.startswith("/api/health"):
+            super().log_message(format, *args)
+
+    def _serve_static(self, request_path: str) -> None:
+        content, content_type = serve_static_content(STATIC_ROOT, request_path)
+        self._send_binary(content, content_type)
+
+    def _send_binary(self, content: bytes, content_type: str) -> None:
+        self.send_response(HTTPStatus.OK)
+        self._security_headers()
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(content)))
+        self.end_headers()
+        self.wfile.write(content)
+
+    def _send_export(self, result: dict[str, Any]) -> None:
+        filename = str(result["filename"])
+        content = result["content"]
+        mime = str(result["mime"])
+        self.send_response(HTTPStatus.OK)
+        self._security_headers()
+        self.send_header("Content-Type", mime)
+        self.send_header("Content-Disposition",
+                         f"attachment; filename*=UTF-8''{quote(filename)}")
+        self.send_header("Content-Length", str(len(content)))
+        self.end_headers()
+        self.wfile.write(content)
+
+    def _body_json(self) -> dict[str, Any]:
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError as exc:
+            raise StudioError("无效请求长度") from exc
+        if length <= 0 or length > MAX_DOCUMENT_BYTES + 65536:
+            raise StudioError("无效请求体", HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
+        try:
+            payload = json.loads(self.rfile.read(length))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise StudioError("请求 JSON 无效") from exc
+        if not isinstance(payload, dict):
+            raise StudioError("请求必须是 JSON 对象")
+        return payload
+
+    def _require_write_header(self) -> None:
+        if self.headers.get(WRITE_HEADER) != "1":
+            raise StudioError("缺少 Studio 写入凭证", HTTPStatus.FORBIDDEN)
+
+    def _json(self, payload: Any, status: int = HTTPStatus.OK) -> None:
+        body = json.dumps(payload, ensure_ascii=False, default=str).encode("utf-8")
+        self.send_response(status)
+        self._security_headers()
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _security_headers(self) -> None:
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; img-src 'self' data:; style-src 'self'; "
+            "script-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+        )
+        self.send_header("Cache-Control", "no-store")
+
+
+class RandenStudioServer(ThreadingHTTPServer):
+    """Randen Studio 多线程 HTTP 服务器。"""
+    app: StudioApplication
+
+
+def create_server(
+    project_root: Path,
+    *,
+    host: str = "127.0.0.1",
+    port: int = 4567,
+    writer_executor: Any = None,
+    review_executor: Any = None,
+    chat_executor: Any = None,
+    source_executor: Any = None,
+) -> RandenStudioServer:
+    """创建 Randen Studio HTTP 服务器实例。"""
+    if not STATIC_ROOT.is_dir():
+        raise StudioError(f"Studio 静态资源缺失: {STATIC_ROOT}")
+    app = StudioApplication(
+        project_root,
+        writer_executor=writer_executor,
+        review_executor=review_executor,
+        chat_executor=chat_executor,
+        source_executor=source_executor,
+    )
+    handler = partial(StudioRequestHandler, directory=str(STATIC_ROOT))
+    server = RandenStudioServer((host, port), handler)
+    server.app = app
+    return server

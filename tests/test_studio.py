@@ -97,7 +97,7 @@ def test_studio_rejects_paths_outside_novel_documents(tmp_path: Path):
         app.write_document("data/workflows/book_state.yaml", "x", None)
 
 
-def test_studio_focus_and_writer_reuse_openwrite_pipeline(tmp_path: Path, monkeypatch):
+def test_studio_focus_and_writer_reuse_randen_pipeline(tmp_path: Path, monkeypatch):
     init_project(tmp_path, "demo")
     monkeypatch.setenv("LLM_API_KEY", "configured-for-test")
     calls: list[dict] = []
@@ -183,7 +183,7 @@ def test_studio_http_serves_ui_api_and_blocks_unsigned_writes(tmp_path: Path):
 
         with opener.open(f"{base}/") as response:
             html = response.read().decode("utf-8")
-            assert "OpenWrite Studio" in html
+            assert "Randen Studio" in html
             assert "default-src 'self'" in response.headers["Content-Security-Policy"]
 
         request = Request(
@@ -212,7 +212,7 @@ def test_studio_http_serves_ui_api_and_blocks_unsigned_writes(tmp_path: Path):
             ).encode("utf-8"),
             headers={
                 "Content-Type": "application/json",
-                "X-OpenWrite-Studio": "1",
+                "X-Randen-Studio": "1",
             },
         )
         with opener.open(save_request) as response:
@@ -347,7 +347,7 @@ def test_studio_http_exposes_context_and_import_routes(tmp_path: Path):
                     "arc_id": "arc_001",
                 }
             ).encode("utf-8"),
-            headers={"Content-Type": "application/json", "X-OpenWrite-Studio": "1"},
+            headers={"Content-Type": "application/json", "X-Randen-Studio": "1"},
         )
         with opener.open(request) as response:
             payload = json.loads(response.read())
@@ -370,7 +370,7 @@ def test_studio_http_can_initialize_an_empty_workspace(tmp_path: Path):
             f"{base}/api/project/init",
             method="POST",
             data=json.dumps({"novel_id": "web_novel", "title": "前端新书"}).encode("utf-8"),
-            headers={"Content-Type": "application/json", "X-OpenWrite-Studio": "1"},
+            headers={"Content-Type": "application/json", "X-Randen-Studio": "1"},
         )
         with opener.open(request) as response:
             payload = json.loads(response.read())

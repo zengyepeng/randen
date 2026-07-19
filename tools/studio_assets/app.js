@@ -31,7 +31,7 @@ async function api(path, options = {}) {
   const headers = { Accept: "application/json", ...(options.headers || {}) };
   if (options.body !== undefined) {
     headers["Content-Type"] = "application/json";
-    headers["X-OpenWrite-Studio"] = "1";
+    headers["X-Randen-Studio"] = "1";
   }
   const response = await fetch(path, { ...options, headers });
   const contentType = response.headers.get("Content-Type") || "";
@@ -801,7 +801,7 @@ function toggleInspector(open) {
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
   $(".brand-logo").src = theme === "dark" ? "/brand/logo-dark.svg" : "/brand/logo.svg";
-  localStorage.setItem("openwrite-theme", theme);
+  localStorage.setItem("randen-theme", theme);
 }
 
 function bindEvents() {
@@ -878,7 +878,7 @@ async function routeFromLocation() {
 }
 
 async function start() {
-  const storedTheme = localStorage.getItem("openwrite-theme");
+  const storedTheme = localStorage.getItem("randen-theme");
   const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   applyTheme(storedTheme || (systemDark ? "dark" : "light"));
   bindEvents();
