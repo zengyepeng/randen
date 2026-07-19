@@ -2,10 +2,14 @@
 """燃灯 (Randen) — 长篇小说 AI 写作合伙人。
 
 主入口：randen CLI。
-源码继承自 OpenWrite 项目，Agent 已更名为青灯 (Qingdeng) 和落笔 (Luobi)。
+入门用法:
+  randen init           新建一本书
+  randen xie            写下一章
+  randen kan            查看项目状态
+  randen --help         查看完整帮助
 """
 
-from tools.cli import main
+from tools.simple_cli import main
 
 if __name__ == "__main__":
     main()

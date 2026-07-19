@@ -1,7 +1,8 @@
 """OpenWrite CLI - 命令行接口
 
 用法:
-    openwrite init <novel_id>     # 初始化项目
+    openwrite init [novel_id]     # 初始化项目（无参数启动交互式向导）
+    openwrite setup               # 配置 AI 模型（交互式向导）
     openwrite sync                # 同步 src -> data
     openwrite write <chapter>     # 写章节
     openwrite review <chapter>    # 审查章节
@@ -55,6 +56,7 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="可用命令")
 
     _add_init_command(subparsers)
+    _add_setup_command(subparsers)
     _add_goethe_command(subparsers)
     _add_dante_command(subparsers)
     _add_sync_command(subparsers)
@@ -98,6 +100,8 @@ def _dispatch(args) -> int:
     """分发命令"""
     if args.command == "init":
         return _cmd_init(args)
+    elif args.command == "setup":
+        return _cmd_setup(args)
     elif args.command == "sync":
         return _cmd_sync(args)
     elif args.command == "write":
@@ -145,9 +149,18 @@ def _dispatch(args) -> int:
 
 def _add_init_command(subparsers):
     """init 命令"""
-    p = subparsers.add_parser("init", help="初始化新项目")
-    p.add_argument("novel_id", help="小说 ID")
+    p = subparsers.add_parser("init", help="初始化新项目（无参数时启动交互式向导）")
+    p.add_argument("novel_id", nargs="?", default=None, help="小说 ID（不指定则启动交互式向导）")
     p.add_argument("--template", "-t", default="default", help="模板类型")
+
+
+def _add_setup_command(subparsers):
+    """setup 命令 - AI 模型配置向导"""
+    subparsers.add_parser(
+        "setup",
+        help="配置 AI 模型（交互式向导）",
+        description="配置 AI 模型：选择提供商、输入 API Key、测试连接。",
+    )
 
 
 def _add_goethe_command(subparsers):
@@ -355,11 +368,22 @@ def _add_agent_command(subparsers):
 
 
 def _cmd_init(args) -> int:
-    """初始化项目"""
+    """初始化项目
+
+    有 novel_id 参数时使用已有逻辑；
+    无参数时启动交互式新手向导。
+    """
+    project_root = Path.cwd()
+
+    if not args.novel_id:
+        # 启动交互式新手向导
+        from tools.init_wizard import InitWizard
+
+        return InitWizard().run()
+
     from tools.novel_service import NovelApplicationService, NovelServiceError
 
     novel_id = args.novel_id
-    project_root = Path.cwd()
 
     logger.info(f"初始化项目: {novel_id}")
     if getattr(args, "template", "default") != "default":
@@ -371,6 +395,14 @@ def _cmd_init(args) -> int:
         logger.error(str(exc))
         return 1
     return 0
+
+
+def _cmd_setup(args) -> int:
+    """运行配置向导"""
+    _ = args
+    from tools.setup_wizard import run_setup_wizard
+
+    return run_setup_wizard()
 
 
 def _cmd_write(args) -> int:
