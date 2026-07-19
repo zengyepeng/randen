@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+"""燃灯 (Randen) — 长篇小说 AI 写作合伙人。
+
+主入口：randen CLI。
+源码继承自 OpenWrite 项目，Agent 已更名为青灯 (Qingdeng) 和落笔 (Luobi)。
+"""
+
+from tools.cli import main
+
+if __name__ == "__main__":
+    main()

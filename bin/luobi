@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+"""落笔 (Luobi) — 燃灯正文创作主 Agent。
+
+负责章节写作、37 维度审查、状态结算。
+日常推进正文的主要入口。
+
+用法: randen luobi
+"""
+
+import sys
+from tools.cli import main
+
+if __name__ == "__main__":
+    sys.argv = [sys.argv[0], "luobi"] + sys.argv[1:]
+    main()

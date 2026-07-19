@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+"""青灯 (Qingdeng) — 燃灯长期规划 Agent。
+
+负责灵感整理、人物设定、世界观构建、大纲规划。
+在资产成熟后显式 handoff 给落笔 (Luobi)。
+
+用法: randen qingdeng
+"""
+
+import sys
+from tools.cli import main
+
+if __name__ == "__main__":
+    sys.argv = [sys.argv[0], "qingdeng"] + sys.argv[1:]
+    main()
