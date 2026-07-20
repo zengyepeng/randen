@@ -5,7 +5,7 @@
   width: min(100%, 1080px);
   min-height: 100%;
   margin: 0 auto;
-  padding: 34px clamp(24px, 4vw, 54px) 48px;
+  padding: 40px clamp(28px, 5vw, 60px) 60px;
 }
 
 .dashboard-view[hidden] {
@@ -14,9 +14,9 @@
 
 .dashboard-columns {
   display: grid;
-  margin-top: 30px;
+  margin-top: 32px;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 34px;
+  gap: 40px;
 }
 
 .dashboard-section {
