@@ -365,7 +365,7 @@ function _initFileUpload() {
 }
 
 
-function _readFile(file, textarea, dropzone) {
+async function _readFile(file, textarea, dropzone) {
   if (file.name.endsWith('.epub')) {
     if (dropzone) dropzone.querySelector("span").textContent = "⏳ 解析 EPUB…";
     try {
