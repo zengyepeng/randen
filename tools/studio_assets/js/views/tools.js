@@ -592,3 +592,67 @@ function _addSaveButton(container, resultType, data, title) {
   });
   container.prepend(btn);
 }
+
+
+  // DNA Extraction
+  $("#ew-dna-extract")?.addEventListener("click", async () => {
+    const text = $("#ew-dissect-text")?.value || "";
+    const out = $("#ew-dissect-out");
+    if (text.length < 200) { if (out) _ewErr(out, new Error("DNA提取至少需要200字")); return; }
+    const btn = $("#ew-dna-extract");
+    if (btn) btn.disabled = true;
+    if (out) { out.hidden = false; out.textContent = "🧬 提取DNA中（约15秒）…"; }
+    try {
+      const res = await fetch("/api/dna/extract", {
+        method: "POST", headers: {"Content-Type":"application/json","X-Randen-Studio":"1"},
+        body: JSON.stringify({ text, title: $("#ew-dissect-title")?.value||"未命名" })
+      });
+      if (!res.ok) throw new Error((await res.json().catch(()=>({error:"失败"}))).error||"请求失败");
+      const data = (await res.json()).dna || await res.json();
+      if (out) {
+        const h = data.hard_stats||{};
+        const l = data.layers||{};
+        const layers = Object.entries(l).filter(([k]) => !k.startsWith("llm_")).slice(0,8)
+          .map(([k,v]) => `<div style="font-size:.78rem;color:var(--text-secondary)">${k.replace('layer_','').replace('_',' ')}: ${(v||'').toString().substring(0,60)}</div>`).join('');
+        out.innerHTML = `
+<div class="ew-item ew-dna">
+  <h4>🧬 ${_esc(data.meta?.title||'未命名')} · ${data.llm_analyzed?'🤖AI深度':'📊硬数据'}分析</h4>
+  <div class="eri-stat-row">
+    <span class="eri-stat">${(h.total_chars||0).toLocaleString()}字</span>
+    <span class="eri-stat">句长${h.avg_sentence_len||0}</span>
+    <span class="eri-stat">对话${h.dialogue_ratio_percent||0}%</span>
+    <span class="eri-stat">${h.chapter_count||0}章</span>
+  </div>
+  <div style="margin-top:8px">${layers}</div>
+  ${h.top_words?.length ? `<p style="font-size:.75rem;color:var(--text-tertiary);margin-top:6px">高频词: ${h.top_words.slice(0,8).map(w=>w.word).join(', ')}</p>` : ''}
+</div>`;
+      }
+    } catch(e) { if (out) _ewErr(out, e); }
+    if (btn) btn.disabled = false;
+  });
+
+  // DNA Blend
+  $("#ew-dna-blend")?.addEventListener("click", async () => {
+    const selected = $$(".ew-book-select:checked");
+    if (selected.length < 2) { alert("请至少勾选2本已拆书目"); return; }
+    const results = [];
+    selected.forEach(cb => { const i = parseInt(cb.dataset.idx); if (_ewBooks[i]) results.push(_ewBooks[i].result); });
+    const out = $("#ew-dissect-out"); const btn = $("#ew-dna-blend");
+    if (btn) btn.disabled = true;
+    if (out) { out.hidden = false; out.textContent = "🎨 风格融合中…"; }
+    try {
+      const res = await fetch("/api/dna/blend", {
+        method: "POST", headers: {"Content-Type":"application/json","X-Randen-Studio":"1"},
+        body: JSON.stringify({ dnas: results, instruction: "均衡融合各书风格" })
+      });
+      if (!res.ok) throw new Error((await res.json().catch(()=>({error:"失败"}))).error||"请求失败");
+      const data = await res.json();
+      if (out) out.innerHTML = `
+<div class="ew-item ew-dna">
+  <h4>🎨 ${data.blended_style_summary?.replace(/\n/g,'<br>')||'风格融合完成'}</h4>
+  ${data.llm_advice_result ? `<p class="ew-tip">💡 ${_esc(data.llm_advice_result.writing_advice||'')}</p>` : ''}
+  ${data.hard_fusion?.avg_sentence_len ? `<small>融合句长: ${data.hard_fusion.avg_sentence_len}字 | 对话: ${data.hard_fusion.dialogue_ratio_percent}%</small>` : ''}
+</div>`;
+    } catch(e) { if (out) _ewErr(out, e); }
+    if (btn) btn.disabled = false;
+  });

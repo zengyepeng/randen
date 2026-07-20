@@ -509,3 +509,33 @@ def handle_persona_load(app, _params=None) -> dict:
     """加载作者人设"""
     from tools.creation_engine import load_persona
     return load_persona(str(app.project_root))
+
+def handle_dna_extract(app, params: dict[str, Any]) -> dict[str, Any]:
+    """DNA 提取"""
+    from tools.dna_extractor import extract_dna
+    text = str(params.get("text") or "")
+    title = str(params.get("title") or "未命名")
+    if len(text) < 200:
+        raise RuntimeError("正文太短，至少需要200字")
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+        return extract_dna(text, title, llm_client=client)
+    except ImportError:
+        return extract_dna(text, title)
+
+
+def handle_dna_blend(app, params: dict[str, Any]) -> dict[str, Any]:
+    """风格融合"""
+    from tools.dna_extractor import blend_styles
+    dnas = params.get("dnas", [])
+    weights = params.get("weights", None)
+    instruction = str(params.get("instruction") or "")
+    if len(dnas) < 2:
+        raise RuntimeError("至少需要2本书的DNA才能融合")
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+        return blend_styles(dnas, weights, instruction, client)
+    except ImportError:
+        return blend_styles(dnas, weights, instruction)
