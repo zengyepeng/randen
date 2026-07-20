@@ -484,7 +484,8 @@ function _initMergeButton() {
 }
 
 /* ── Navigation ── */
-function goStep(n) {\n  localStorage.setItem("randen-wizard-step", String(n));
+function goStep(n) {
+  localStorage.setItem("randen-wizard-step", String(n));
   $$(".ed-step").forEach(el => el.classList.toggle("active", parseInt(el.dataset.step) === n));
   $$(".ed-dot").forEach((el, i) => {
     el.classList.remove("active", "done");
