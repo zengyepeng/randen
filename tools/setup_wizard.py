@@ -336,20 +336,31 @@ def run_setup_wizard() -> int:
     if not api_key:
         _print("[yellow]⚠ Key 为空，后续将无法调用 AI。可用 randen setup 重新配置。[/]", style="warn")
 
-    # ── 步骤 3: base_url ───────────────────────────
-    _print(
-        f"\n[bold]步骤 3: API 地址（直接回车使用默认值）[/]" if console else "\n【步骤 3】API 地址",
-        style="info",
-    )
+    # ── 步骤 3: API 地址 ───────────────────────────
+    # 非自定义提供商直接用默认地址，不打扰用户
+    base_url = provider["default_url"]
 
-    if Prompt is not None:
-        base_url = Prompt.ask(
-            "  API 地址",
-            default=provider["default_url"],
-        ).strip()
+    if provider["id"] == "custom":
+        _print(
+            f"\n[bold]步骤 3: API 地址[/]",
+            style="info",
+        )
+        _print(
+            f"  示例: Ollama → http://localhost:11434/v1\n"
+            f"  示例: 第三方代理 → https://your-proxy.com/v1",
+            style="info" if console else "info",
+        )
+
+        if Prompt is not None:
+            base_url = Prompt.ask(
+                "  API 地址",
+                default=provider["default_url"],
+            ).strip()
+        else:
+            raw = input(f"  API 地址 (默认 {provider['default_url']}): ").strip()
+            base_url = raw if raw else provider["default_url"]
     else:
-        raw = input(f"  API 地址 (默认 {provider['default_url']}): ").strip()
-        base_url = raw if raw else provider["default_url"]
+        _print(f"  API 地址: {base_url}" if console else f"  API 地址: {base_url}")
 
     # ── 步骤 4: 模型 ──────────────────────────────
     _print(
