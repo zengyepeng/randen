@@ -23,6 +23,11 @@ from .handlers import (
     handle_sync,
     handle_workspace,
     handle_write,
+    handle_market,
+    handle_dissect,
+    handle_idea,
+    handle_opening,
+    handle_faq,
 )
 
 # (处理器, 是否需要项目已初始化)
@@ -38,6 +43,11 @@ POST_ROUTES: dict[str, tuple[Any, bool]] = {
     "/api/project/init":    (handle_project_init,    False),
     "/api/focus":           (handle_focus,           False),
     "/api/model":           (handle_model,           False),
+    "/api/market":          (handle_market,          False),
+    "/api/dissect":         (handle_dissect,         False),
+    "/api/idea":            (handle_idea,            False),
+    "/api/opening":         (handle_opening,         False),
+    "/api/faq":             (handle_faq,             False),
     "/api/write":           (handle_write,           True),
     "/api/review":          (handle_review,          True),
     "/api/sync":            (handle_sync,            True),

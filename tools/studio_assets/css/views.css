@@ -427,3 +427,72 @@
   align-items: center;
   gap: 12px;
 }
+
+/* ---- Creation Engine ---- */
+.engine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.engine-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  background: var(--surface-subtle);
+}
+
+.engine-card h3 {
+  font-size: .95rem;
+  margin: 0 0 4px;
+}
+
+.engine-card p {
+  color: var(--text-secondary);
+  font-size: .82rem;
+  margin: 0 0 10px;
+}
+
+.engine-card textarea,
+.engine-card input,
+.engine-card select {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+  font-size: .85rem;
+}
+
+.engine-card label {
+  display: block;
+  font-size: .82rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.faq-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.faq-chip {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: .82rem;
+  cursor: pointer;
+  background: var(--surface-subtle);
+  transition: background .15s;
+}
+
+.faq-chip:hover { background: var(--surface-raised); }
+
+.faq-answer {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  font-size: .85rem;
+  color: var(--text-primary);
+}

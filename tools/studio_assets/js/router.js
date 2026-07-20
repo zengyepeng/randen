@@ -6,6 +6,7 @@ import { getDocumentAPI, loadContinuityAPI } from "./api.js";
 import { renderDocumentList } from "./views/dashboard.js";
 import { updateEditorCount } from "./views/editor.js";
 import { renderContinuity } from "./views/continuity.js";
+import { initCreationEngine } from "./views/tools.js";
 
 export function documentGroup(path) {
   if (path.startsWith("data/manuscript/")) return "chapters";
@@ -43,6 +44,7 @@ export function switchView(view, pushHistory = true) {
   }
 
   if (view === "continuity") loadContinuityView();
+  if (view === "tools") initCreationEngine();
   if (pushHistory) {
     const url = dashboard ? "/" : `/#${encodeURIComponent(view)}`;
     history.pushState({ view }, "", url);

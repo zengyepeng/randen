@@ -290,6 +290,47 @@
               <p id="create-status" class="form-status" role="status"></p>
             </section>
             <section class="tool-card tool-card-wide">
+              <div class="subsection-heading"><h2>🏮 创作引擎</h2><span>扫榜→拆书→脑洞→开篇</span></div>
+              <div class="engine-grid">
+                <article class="engine-card">
+                  <h3>📊 扫榜分析</h3>
+                  <p>看当下什么赛道流量大、竞争小，帮你选材。</p>
+                  <label>目标平台<select id="engine-platform">
+                    <option value="默认">全平台通用</option>
+                    <option value="番茄小说">番茄小说</option>
+                    <option value="起点中文网">起点中文网</option>
+                    <option value="知乎盐言">知乎盐言</option>
+                  </select></label>
+                  <button id="engine-market" class="primary-button" type="button">开始分析</button>
+                  <pre id="engine-market-result" class="context-preview" hidden></pre>
+                </article>
+                <article class="engine-card">
+                  <h3>🔍 拆书分析</h3>
+                  <p>粘贴一段参考作品，AI 拆解爽点/金手指/钩子。</p>
+                  <textarea id="engine-dissect-text" rows="8" placeholder="粘贴参考作品的正文片段..."></textarea>
+                  <input id="engine-dissect-title" placeholder="作品名（可选）" style="width:100%">
+                  <button id="engine-dissect" class="primary-button" type="button">拆解分析</button>
+                  <pre id="engine-dissect-result" class="context-preview" hidden></pre>
+                </article>
+                <article class="engine-card">
+                  <h3>🧠 脑洞完善</h3>
+                  <p>一句话灵感 → 追问澄清 → 完整核心设定。</p>
+                  <textarea id="engine-idea-premise" rows="3" placeholder="写下一句话灵感..."></textarea>
+                  <button id="engine-idea" class="primary-button" type="button">完善脑洞</button>
+                  <pre id="engine-idea-result" class="context-preview" hidden></pre>
+                </article>
+                <article class="engine-card">
+                  <h3>✍️ 开篇诊断</h3>
+                  <p>检查第一章的钩子、节奏、悬念是否到位。</p>
+                  <textarea id="engine-opening-text" rows="8" placeholder="粘贴你的第一章开篇内容..."></textarea>
+                  <button id="engine-opening" class="primary-button" type="button">诊断开篇</button>
+                  <pre id="engine-opening-result" class="context-preview" hidden></pre>
+                </article>
+              </div>
+              <div class="subsection-heading" style="margin-top:20px"><h2>❓ 新人FAQ</h2></div>
+              <div id="engine-faq" class="faq-list"></div>
+            </section>
+            <section class="tool-card tool-card-wide">
               <div class="subsection-heading"><h2>风格与设定来源包</h2><span id="source-count">0</span></div>
               <form id="source-form" class="compact-form source-form">
                 <div class="form-grid two">

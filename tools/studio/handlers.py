@@ -345,3 +345,46 @@ def _ops_export_download(
         content = output.read_bytes()
     mime = "text/markdown; charset=utf-8" if format_name == "md" else "text/plain; charset=utf-8"
     return f"{app.novel_id}.{format_name}", content, mime
+
+# ── 创作引擎 ───────────────────────────────────────────────
+
+def handle_market(args: dict[str, Any] | None = None) -> dict[str, Any]:
+    """扫榜分析"""
+    from tools.creation_engine import analyze_market
+    platform = (args or {}).get("platform", "默认")
+    return {"markets": analyze_market(platform)}
+
+
+def handle_dissect(args: dict[str, Any]) -> dict[str, Any]:
+    """拆书分析"""
+    from tools.creation_engine import dissect_book
+    text = str(args.get("text") or "")
+    title = str(args.get("title") or "未命名作品")
+    if not text.strip():
+        raise RuntimeError("请提供待拆解的正文内容")
+    return dissect_book(text, title)
+
+
+def handle_idea(args: dict[str, Any]) -> dict[str, Any]:
+    """脑洞完善"""
+    from tools.creation_engine import refine_idea
+    return refine_idea(
+        premise=str(args.get("premise") or ""),
+        genre=str(args.get("genre") or ""),
+        golden_finger_idea=str(args.get("golden_finger") or ""),
+    )
+
+
+def handle_opening(args: dict[str, Any]) -> dict[str, Any]:
+    """开篇诊断"""
+    from tools.creation_engine import diagnose_opening
+    text = str(args.get("text") or "")
+    if len(text) < 50:
+        raise RuntimeError("正文太短，请至少提供一段开篇（建议200字以上）")
+    return diagnose_opening(text)
+
+
+def handle_faq(_args: dict[str, Any] | None = None) -> dict[str, Any]:
+    """新人FAQ"""
+    from tools.creation_engine import get_faq_for_newcomer
+    return {"faq": get_faq_for_newcomer()}
