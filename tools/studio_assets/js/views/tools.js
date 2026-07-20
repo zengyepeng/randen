@@ -368,25 +368,27 @@ function _initFileUpload() {
 function _readFile(file, textarea, dropzone) {
   if (file.name.endsWith('.epub')) {
     if (dropzone) dropzone.querySelector("span").textContent = "⏳ 解析 EPUB…";
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        // Convert ArrayBuffer to base64 to avoid huge JSON
-        const bytes = new Uint8Array(reader.result);
-        let binary = '';
-        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-        const b64 = btoa(binary);
-        const data = await _ewPost("/api/epub", { text: b64 });
-        if (data.ok && textarea) {
-          textarea.value = data.text;
-          if (dropzone) dropzone.querySelector("span").textContent = `📖 ${data.title || file.name} (${data.char_count}字) 已解析`;
-        } else if (data.error) {
-          alert(data.error);
-          if (dropzone) dropzone.querySelector("span").textContent = "📂 拖拽 .txt/.md/.epub 文件到此处，或点击选择";
-        }
-      } catch(e) { alert("EPUB 解析失败: " + (e.message||e)); }
-    };
-    reader.readAsArrayBuffer(file);
+    try {
+      const res = await fetch("/api/epub", {
+        method: "POST",
+        headers: { "X-Randen-Studio": "1" },
+        body: file
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({error:"未知错误"}));
+        alert("EPUB 解析失败: " + (err.error||"Failed to fetch"));
+        if (dropzone) dropzone.querySelector("span").textContent = "📂 拖拽 .txt/.md/.epub 文件到此处，或点击选择";
+        return;
+      }
+      const data = await res.json();
+      if (data.ok && textarea) {
+        textarea.value = data.text;
+        if (dropzone) dropzone.querySelector("span").textContent = `📖 ${data.title || file.name} (${data.char_count}字) 已解析`;
+      } else if (data.error) {
+        alert(data.error);
+        if (dropzone) dropzone.querySelector("span").textContent = "📂 拖拽 .txt/.md/.epub 文件到此处，或点击选择";
+      }
+    } catch(e) { alert("EPUB 上传失败: " + (e.message||e)); }
     return;
   }
   if (!file.name.endsWith(".txt") && !file.name.endsWith(".md")) {

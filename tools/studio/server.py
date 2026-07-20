@@ -133,6 +133,16 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
         try:
             self._require_write_header()
             route = urlparse(self.path).path
+
+            # EPUB: raw binary body, not JSON
+            if route == "/api/epub":
+                length = int(self.headers.get("Content-Length", 0))
+                raw = self.rfile.read(length)
+                from tools.creation_engine import extract_text_from_epub
+                result = extract_text_from_epub(raw, is_bytes=True)
+                self._json(result)
+                return
+
             handler, needs_project = POST_ROUTES.get(route, (None, False))
             if handler is None:
                 raise StudioError("接口不存在", HTTPStatus.NOT_FOUND)
