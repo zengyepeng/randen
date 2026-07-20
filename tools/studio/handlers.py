@@ -539,3 +539,33 @@ def handle_dna_blend(app, params: dict[str, Any]) -> dict[str, Any]:
         return blend_styles(dnas, weights, instruction, client)
     except ImportError:
         return blend_styles(dnas, weights, instruction)
+
+def handle_material_list(app, params=None):
+    from tools.material_library import list_materials, get_material_stats
+    category = str((params or {}).get("category", ""))
+    mats = list_materials(str(app.project_root), app.novel_id, category)
+    stats = get_material_stats(str(app.project_root), app.novel_id)
+    return {"materials": mats, "stats": stats}
+
+
+def handle_material_create(app, params):
+    from tools.material_library import create_material
+    return create_material(
+        str(app.project_root), app.novel_id,
+        category=str(params.get("category", "note")),
+        title=str(params.get("title", "")),
+        content=str(params.get("content", "")),
+        tags=params.get("tags", []),
+        usage=str(params.get("usage", "both")),
+    )
+
+
+def handle_material_update(app, params):
+    from tools.material_library import update_material
+    return update_material(str(app.project_root), app.novel_id,
+                           str(params.get("id", "")), params.get("updates", {}))
+
+
+def handle_material_delete(app, params):
+    from tools.material_library import delete_material
+    return delete_material(str(app.project_root), app.novel_id, str(params.get("id", "")))

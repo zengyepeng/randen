@@ -42,6 +42,10 @@ from .handlers import (
     handle_persona_template,
     handle_persona_save,
     handle_persona_load,
+    handle_material_list,
+    handle_material_create,
+    handle_material_update,
+    handle_material_delete,
 )
 
 # (处理器, 是否需要项目已初始化)
@@ -76,6 +80,10 @@ POST_ROUTES: dict[str, tuple[Any, bool]] = {
     "/api/persona/template":  (handle_persona_template, False),
     "/api/persona/save":      (handle_persona_save,    False),
     "/api/persona/load":      (handle_persona_load,    False),
+    "/api/materials":          (handle_material_list,   True),
+    "/api/material/create":    (handle_material_create, True),
+    "/api/material/update":    (handle_material_update, True),
+    "/api/material/delete":    (handle_material_delete, True),
     "/api/write":             (handle_write,           True),
     "/api/review":            (handle_review,          True),
     "/api/sync":              (handle_sync,            True),

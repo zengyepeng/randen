@@ -7,6 +7,7 @@ import { renderDocumentList } from "./views/dashboard.js";
 import { updateEditorCount } from "./views/editor.js";
 import { renderContinuity } from "./views/continuity.js";
 import { initCreationWizard } from "./views/tools.js";
+import { loadMaterials } from "./views/materials.js";
 
 export function documentGroup(path) {
   if (path.startsWith("data/manuscript/")) return "chapters";
@@ -34,6 +35,8 @@ export function switchView(view, pushHistory = true) {
   if (agentsView) agentsView.hidden = view !== "agents";
   if (continuityView) continuityView.hidden = view !== "continuity";
   if (toolsView) toolsView.hidden = view !== "tools";
+  const matView = $("#materials-view");
+  if (matView) matView.hidden = view !== "materials";
   if (emotionView) emotionView.hidden = view !== "emotion";
 
   renderDocumentList(dashboard || !documentView ? "chapters" : view);
@@ -44,6 +47,7 @@ export function switchView(view, pushHistory = true) {
   }
 
   if (view === "continuity") loadContinuityView();
+  if (view === "materials") loadMaterials();
   if (view === "tools") initCreationWizard();
   if (pushHistory) {
     const url = dashboard ? "/" : `/#${encodeURIComponent(view)}`;
