@@ -329,50 +329,45 @@ def run_setup_wizard() -> int:
         style="info" if console else "info",
     )
 
-    # API Key 输入：优先用 Rich 显示 *，降级到自定义 getpass（echo *），最后用明文
+    # API Key 输入：逐字符读入并回显 *，确保所有终端可见
     api_key = ""
-    if Prompt is not None:
-        try:
-            api_key = Prompt.ask("  API Key", password=True).strip()
-        except Exception:
-            # Rich password 在某些终端不兼容，降级到自定义方案
-            pass
-
-    if not api_key:
-        # 自定义 getpass：逐字符读入，回显 *
-        try:
-            import sys as _sys
-            if _sys.platform != "win32":
-                import termios, tty
-                _print("  API Key: ", style="prompt" if _print is _plain_print else None)
-                _sys.stdout.write("  API Key: ")
-                _sys.stdout.flush()
-                fd = _sys.stdin.fileno()
-                old = termios.tcgetattr(fd)
-                try:
-                    tty.setraw(fd)
-                    chars = []
-                    while True:
-                        ch = _sys.stdin.read(1)
-                        if ch in ("\n", "\r"):
-                            _sys.stdout.write("\n")
-                            break
-                        if ch == "\x7f":  # backspace
-                            if chars:
-                                chars.pop()
-                                _sys.stdout.write("\b \b")
-                        else:
-                            chars.append(ch)
-                            _sys.stdout.write("*")
-                        _sys.stdout.flush()
-                    api_key = "".join(chars).strip()
-                finally:
-                    termios.tcsetattr(fd, termios.TCSADRAIN, old)
-            else:
-                # Windows 回退到明文（Windows 的 getpass 也不显示 *）
-                api_key = input("  API Key (明文): ").strip()
-        except Exception:
-            api_key = input("  API Key (明文): ").strip()
+    try:
+        import sys as _sys
+        if _sys.platform != "win32":
+            import termios, tty
+            _sys.stdout.write("  API Key: ")
+            _sys.stdout.flush()
+            fd = _sys.stdin.fileno()
+            old = termios.tcgetattr(fd)
+            try:
+                tty.setraw(fd)
+                chars = []
+                while True:
+                    ch = _sys.stdin.read(1)
+                    if ch in ("\n", "\r"):
+                        _sys.stdout.write("\n")
+                        break
+                    if ch == "\x7f":  # backspace
+                        if chars:
+                            chars.pop()
+                            _sys.stdout.write("\b \b")
+                    elif ch == "\x03":  # Ctrl+C
+                        _sys.stdout.write("\n")
+                        raise KeyboardInterrupt
+                    else:
+                        chars.append(ch)
+                        _sys.stdout.write("*")
+                    _sys.stdout.flush()
+                api_key = "".join(chars).strip()
+            finally:
+                termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        else:
+            api_key = input("  API Key（明文输入）: ").strip()
+    except KeyboardInterrupt:
+        _print("\n[yellow]⚠ 已取消[/]", style="warn")
+        return 1
+    except Exception:
+        api_key = input("  API Key（明文输入）: ").strip()
 
     if not api_key:
         _print("[yellow]⚠ Key 为空，后续将无法调用 AI。可用 randen setup 重新配置。[/]", style="warn")
