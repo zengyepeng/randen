@@ -6,6 +6,18 @@ import { $, $$ } from "../utils.js";
 let _faqData = null;
 
 export function initCreationEngine() {
+  // Accordion: one row open at a time
+  $$(".engine-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const row = btn.closest(".engine-row");
+      const body = row?.querySelector(".engine-body");
+      const isOpen = btn.getAttribute("aria-expanded") === "true";
+      $$(".engine-toggle").forEach(b => b.setAttribute("aria-expanded", "false"));
+      $$(".engine-body").forEach(b => b.hidden = true);
+      if (!isOpen && body) { btn.setAttribute("aria-expanded", "true"); body.hidden = false; }
+    });
+  });
+
   const bind = (id, handler) => $(`#engine-${id}`)?.addEventListener("click", handler);
 
   bind("market", async () => {
