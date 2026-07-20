@@ -384,6 +384,7 @@ async function _readFile(file, textarea, dropzone) {
       if (data.ok && textarea) {
         textarea.value = data.text;
         if (dropzone) dropzone.querySelector("span").textContent = `📖 ${data.title || file.name} (${data.char_count}字) 已解析`;
+        setTimeout(() => $("#ew-dissect-new")?.click(), 100);
       } else if (data.error) {
         alert(data.error);
         if (dropzone) dropzone.querySelector("span").textContent = "📂 拖拽 .txt/.md/.epub 文件到此处，或点击选择";
