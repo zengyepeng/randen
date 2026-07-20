@@ -1,0 +1,30 @@
+story_info:
+  title: 大纲
+  theme: 待填写
+  summary: 待填写，说明主角、核心冲突和整本书的大方向
+  word_count_estimate: 100000
+arcs:
+- id: arc_001
+  title: 第一篇
+  sections:
+  - sec_001
+  chapters:
+  - ch_001
+  arc_emotional_arc: 待填写
+  description: ch_001-ch_003
+sections:
+- id: sec_001
+  title: 开头
+  arc_id: arc_001
+  chapters:
+  - ch_001
+  section_structure: 待填写
+  section_emotional_arc: 待填写
+chapters:
+- id: ch_001
+  title: 第一章
+  section_id: sec_001
+  summary: 待填写
+  dramatic_position: 待填写
+  content_focus: 待填写
+  word_count: 3000

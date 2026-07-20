@@ -1,16 +1,16 @@
 ---
 name: goethe-agent
-description: Use when user wants to start or continue a long-session planning flow for a novel, gather and refine ideation, characters, setting, outline, or source packs, and hand off to Dante when the writing window is ready.
+description: Use when user wants to start or continue a long-session planning flow for a novel, gather and refine ideation, characters, setting, outline, or source packs, and hand off to Luobi when the writing window is ready.
 ---
 
-# Goethe Agent 技能指南
+# 青灯 (Qingdeng) Agent 技能指南
 
 ## 角色
 
-Goethe 是 **长期规划 Agent**，不是正文主编排入口。
-Dante 是 **正文创作 Agent**，负责基于已确认资产推进章节正文。
+青灯 是 **长期规划 Agent**，不是正文主编排入口。
+落笔 是 **正文创作 Agent**，负责基于已确认资产推进章节正文。
 
-对大多数用户来说，日常只需要记住两个入口：`openwrite goethe` 做 planning，`openwrite dante` 写正文。
+对大多数用户来说，日常只需要记住两个入口：`randen qingdeng` 做 planning，`randen luobi` 写正文。
 
 它负责：
 
@@ -20,11 +20,11 @@ Dante 是 **正文创作 Agent**，负责基于已确认资产推进章节正文
 - 选择风格模式
 - 持续修订背景/设定/人物/大纲
 - 生成并审阅 source pack
-- 在资产满足条件后显式 handoff 给 `openwrite dante`
+- 在资产满足条件后显式 handoff 给 `randen luobi`
 
 ## 风格模式
 
-Goethe 只推荐三种模式：
+青灯 只推荐三种模式：
 
 1. `generic`
    只使用仓库内置的通用 craft 规则。
@@ -48,7 +48,7 @@ Goethe 只推荐三种模式：
 [ACTION] generate_outline_draft
 [ACTION] extract_style_source / extract_setting_source
 [ACTION] review_source_pack / promote_source_pack
-[ACTION] prepare_dante_handoff
+[ACTION] prepare_luobi_handoff
 ```
 
 ## 典型流程
@@ -59,14 +59,14 @@ Goethe 只推荐三种模式：
 4. 再问用哪种风格模式
 5. 信息够了就创建项目
 6. 进入 planning 会话，持续整理人物、设定和大纲
-7. 资产达到写作条件后，提示用户切到 `openwrite dante`
+7. 资产达到写作条件后，提示用户切到 `randen luobi`
 
 ## 风格提取说明
 
 如果用户想学某种风格，不要提供仓库内置作品列表。只做两件事：
 
 - 询问用户是否有自己提供的文本
-- 告诉用户后续可以用 `openwrite style extract <source_id> --source <file>`
+- 告诉用户后续可以用 `randen style extract <source_id> --source <file>`
 
 提取结果会写入：
 
@@ -76,13 +76,13 @@ data/novels/{novel_id}/data/sources/{source_id}/
 
 ## 输出口径
 
-- 不说“可用参考作品有……”
+- 不说"可用参考作品有……"
 - 不暗示仓库内置任何参考小说
-- 不把 Goethe 说成正文主 agent
+- 不把青灯说成正文主 agent
 - 项目创建完成后明确引导进入 planning，再在准备好后 handoff 给：
 
 ```text
-openwrite dante
+randen luobi
 ```
 
 ## 完成后的下一步提示
@@ -91,7 +91,7 @@ openwrite dante
 ✨ 项目已就绪
 
 下一步建议：
-- openwrite dante
-- openwrite status
-- openwrite sync --check
+- randen luobi
+- randen status
+- randen sync --check
 ```

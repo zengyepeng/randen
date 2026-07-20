@@ -27,7 +27,7 @@ def test_cmd_status_ignores_draft_markdown_files(
     (manuscript_dir / "ch_001.md").write_text("# 第一章\n\n正文", encoding="utf-8")
     (manuscript_dir / "ch_001_draft.md").write_text("# 第一章草稿\n\n草稿", encoding="utf-8")
 
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
 
     info_messages: list[str] = []
     monkeypatch.setattr(cli_module.logger, "info", info_messages.append)
@@ -44,7 +44,7 @@ def test_cli_save_load_uses_supported_manuscript_layout(
         "novel_id: demo\ncurrent_arc: arc_002\ncurrent_chapter: ch_002\n",
     )
 
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
 
     saved_path = cli_module._save_chapter(
         tmp_path,
@@ -88,7 +88,7 @@ def test_main_status_command_uses_current_project_root(
     (manuscript_dir / "ch_001.md").write_text("# 第一章\n\n正文", encoding="utf-8")
     (manuscript_dir / "ch_001_draft.md").write_text("# 第一章草稿\n\n草稿", encoding="utf-8")
 
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
     monkeypatch.setattr(sys, "argv", ["openwrite", "status"])
 
     info_messages: list[str] = []
@@ -114,7 +114,7 @@ def test_cmd_status_counts_unique_final_chapters_across_arcs(
     (arc2 / "ch_021.md").write_text("# 第二十一章\n\n正文", encoding="utf-8")
     (arc2 / "ch_021_draft.md").write_text("# 第二十一章草稿\n\n草稿", encoding="utf-8")
 
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
 
     info_messages: list[str] = []
     monkeypatch.setattr(cli_module.logger, "info", info_messages.append)
@@ -138,7 +138,7 @@ def test_cmd_status_prefers_book_state_current_progress(
     state.current_chapter = "ch_007"
     state_store.save(state)
 
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
 
     info_messages: list[str] = []
     monkeypatch.setattr(cli_module.logger, "info", info_messages.append)

@@ -10,7 +10,7 @@ import os
 import re
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("tools.cli")
 
 
 # ── 章节 ID ────────────────────────────────────────────────

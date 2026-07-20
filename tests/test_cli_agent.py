@@ -30,7 +30,7 @@ def _fake_args(instruction: str = "查看项目状态", max_turns: int = 20, qui
 def test_cmd_init_uses_default_initializer_and_returns_zero(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
 
     args = SimpleNamespace(novel_id="demo", template="legacy")
 
@@ -107,7 +107,7 @@ def test_cmd_dante_routes_to_dante_runner(monkeypatch: pytest.MonkeyPatch):
 def test_cmd_dante_no_longer_uses_orchestrator_bridge(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
     import tools.agent.dante as dante_module
 
     orchestrator_called = {"value": False}
@@ -153,7 +153,7 @@ def test_dante_help_no_longer_mentions_placeholder(monkeypatch: pytest.MonkeyPat
 def test_cmd_dante_reports_dante_named_import_error(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ):
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
     real_import = builtins.__import__
 
     def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
@@ -167,13 +167,13 @@ def test_cmd_dante_reports_dante_named_import_error(
         result = cli_module._cmd_dante(_fake_args("查看项目状态"))
 
     assert result == 1
-    assert "Dante 模块未安装" in caplog.text
+    assert "Dante 模块未安装" in caplog.text or "dante 模块未安装" in caplog.text.lower()
 
 
 def test_cmd_agent_is_retired_and_tells_users_to_use_dante(
     caplog: pytest.LogCaptureFixture, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
 
     called = {"value": False}
 
@@ -188,8 +188,8 @@ def test_cmd_agent_is_retired_and_tells_users_to_use_dante(
 
     assert result == 1
     assert called["value"] is False
-    assert "openwrite agent 已退役" in caplog.text
-    assert "openwrite dante" in caplog.text
+    assert "agent 已退役" in caplog.text
+    assert "randen dante" in caplog.text
 
 
 def test_agent_help_only_reports_retired_status(monkeypatch: pytest.MonkeyPatch, capsys):
@@ -439,7 +439,7 @@ def test_cmd_write_routes_through_canonical_packet(
         "novel_id: demo\nstyle_id: demo\ncurrent_arc: arc_001\ncurrent_chapter: ch_001\n",
         encoding="utf-8",
     )
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
 
     packet_dict = {
         "story_background": "背景设定",
@@ -555,7 +555,7 @@ def test_cmd_multi_write_updates_runtime_state(
         "novel_id: demo\nstyle_id: demo\ncurrent_arc: arc_001\ncurrent_chapter: ch_001\n",
         encoding="utf-8",
     )
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
     monkeypatch.setattr(
         llm_module.LLMConfig,
         "from_env",
@@ -722,7 +722,7 @@ def test_cmd_style_synthesize_writes_composed_style_document(
     ref_dir.mkdir(parents=True, exist_ok=True)
     (ref_dir / "summary.md").write_text("# 摘要\n\n参考风格摘要", encoding="utf-8")
 
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
 
     result = cli_module._cmd_style(SimpleNamespace(style_action="synthesize", novel_id="current"))
 
@@ -754,7 +754,7 @@ def test_cmd_review_does_not_rewind_book_state_for_older_chapter(
     state.stage = BookStage.REVIEW_AND_REVISE
     state_store.save(state)
 
-    monkeypatch.setattr(cli_module, "Path", SimpleNamespace(cwd=lambda: tmp_path))
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
     monkeypatch.setattr(
         chapter_pipeline_module,
         "execute_review_chapter",

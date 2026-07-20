@@ -17,7 +17,7 @@ from tools.cli.display import (
 )
 from tools.cli.validators import load_novel_config, resolve_novel_id, validate_model_config, validate_port
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("tools.cli")
 _NSE = None  # lazy import cache for NovelServiceError
 
 

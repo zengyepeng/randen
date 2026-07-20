@@ -120,11 +120,11 @@ front matter 放：
 
 ## 当前命令口径
 
-- `openwrite style extract <source_id> --source <file>`
-- `openwrite setting extract <source_id> --source <file>`
-- `openwrite source review <source_id>`
-- `openwrite source promote <source_id> --target all`
-- `openwrite style synthesize`
+- `randen style extract <source_id> --source <file>`
+- `randen setting extract <source_id> --source <file>`
+- `randen source review <source_id>`
+- `randen source promote <source_id> --target all`
+- `randen style synthesize`
 
 其中 `source promote --target all` 会把：
 - style 信号晋升到当前 `style_id`
