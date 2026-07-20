@@ -872,3 +872,101 @@ def handle_inspire_vision(app, params: dict[str, Any]) -> dict[str, Any]:
         return {"description": "🖼️ 图片已接收！这是一个很好的创作起点。试着描述一下这张图片中的场景——发生了什么？谁在那里？为什么这一刻如此特别？", "question": "从这张图出发，你想讲一个什么样的故事？"}
     except Exception as e:
         raise StudioError(f"图片分析失败: {str(e)}", HTTPStatus.BAD_GATEWAY)
+
+
+# ═══════════════════════════════════════════════════════════════
+# v6.0 新增模块处理函数
+# ═══════════════════════════════════════════════════════════════
+
+def handle_sanitize(app, params):
+    """AI 痕迹脱敏"""
+    from tools.ai_traces_sanitizer import sanitize, full_pipeline, originality_check
+    text = str(params.get("text", ""))
+    action = str(params.get("action", "sanitize"))
+    intensity = str(params.get("intensity", "standard"))
+    if not text.strip():
+        raise StudioError("请提供待处理文本", HTTPStatus.BAD_REQUEST)
+    if action == "check":
+        return originality_check(text)
+    if action == "pipeline":
+        try:
+            import openai
+            client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+            return full_pipeline(text, client)
+        except (ImportError, Exception):
+            return full_pipeline(text)
+    return sanitize(text, intensity)
+
+
+def handle_negotiate(app, params):
+    """多 Agent 谈判模拟"""
+    from tools.multi_agent_negotiator import simulate_negotiation, analyze_negotiation
+    action = str(params.get("action", "simulate"))
+    if action == "analyze":
+        dialogue = str(params.get("dialogue", ""))
+        return analyze_negotiation(dialogue)
+    situation = str(params.get("situation", ""))
+    characters = params.get("characters", [])
+    if not situation or not characters:
+        raise StudioError("请提供局势描述和参与角色", HTTPStatus.BAD_REQUEST)
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+        return simulate_negotiation(situation, characters, client)
+    except (ImportError, Exception):
+        return simulate_negotiation(situation, characters)
+
+
+def handle_redraw(app, params):
+    """Canvas 局部重绘"""
+    from tools.canvas_redrawer import redraw, redraw_many
+    text = str(params.get("text", ""))
+    selection = str(params.get("selection", ""))
+    instruction = str(params.get("instruction", ""))
+    if not selection.strip():
+        raise StudioError("请选择要重写的段落", HTTPStatus.BAD_REQUEST)
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+        return redraw(text, selection, instruction, client)
+    except (ImportError, Exception):
+        return redraw(text, selection, instruction)
+
+
+def handle_cross_domain(app, params):
+    """跨领域类比生成"""
+    from tools.cross_domain_analogy import generate_cross_domain_concept, generate_multi_domain, list_available_domains
+    action = str(params.get("action", "generate"))
+    if action == "domains":
+        return {"domains": list_available_domains()}
+    premise = str(params.get("premise", ""))
+    domain = str(params.get("domain", "") or "")
+    count = int(params.get("count", 3))
+    if not premise.strip():
+        raise StudioError("请提供基础灵感", HTTPStatus.BAD_REQUEST)
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+        if domain:
+            return generate_cross_domain_concept(premise, domain, client)
+        return generate_multi_domain(premise, count, client)
+    except (ImportError, Exception):
+        if domain:
+            return generate_cross_domain_concept(premise, domain)
+        return generate_multi_domain(premise, count)
+
+
+def handle_adapt_drama(app, params):
+    """短剧改编"""
+    from tools.short_drama_adaptor import adapt_chapter_to_drama
+    text = str(params.get("text", ""))
+    title = str(params.get("title", ""))
+    episodes = int(params.get("episodes", 3))
+    if not text.strip():
+        raise StudioError("请提供章节正文", HTTPStatus.BAD_REQUEST)
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+        return adapt_chapter_to_drama(text, title, episodes, client)
+    except (ImportError, Exception):
+        return adapt_chapter_to_drama(text, title, episodes)
