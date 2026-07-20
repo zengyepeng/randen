@@ -146,24 +146,26 @@
         <section id="agents-view" class="workspace-view" hidden aria-labelledby="agents-title">
           <div class="section-title-row workspace-view-header">
             <div>
-              <p class="eyebrow">LONG SESSION</p>
+              <p class="eyebrow">AI COLLABORATION</p>
               <h1 id="agents-title">AI 协作</h1>
-              <p class="section-description">Goethe 整理可写资产，Dante 持续推进正文。对话与工作记忆会写入项目，下次打开仍可继续。</p>
+              <p class="section-description">💡 灵感对话：说出想法 → 多轮追问 → 生成雏形。Goethe 整理可写资产，Dante 持续推进正文。</p>
             </div>
-            <div class="segmented" role="group" aria-label="选择协作 Agent">
-              <button class="segment active" type="button" data-agent="goethe">Goethe · 规划</button>
+            <div class="segmented" role="group" aria-label="选择协作模式">
+              <button class="segment active" type="button" data-agent="inspire">💡 灵感对话</button>
+              <button class="segment" type="button" data-agent="goethe">Goethe · 规划</button>
               <button class="segment" type="button" data-agent="dante">Dante · 正文</button>
             </div>
           </div>
           <div id="chat-log" class="chat-log" aria-live="polite">
-            <article class="chat-message assistant"><strong>Randen</strong><p>选择 Agent 后直接描述目标。规划阶段先找 Goethe，已有可写大纲时切换到 Dante。</p></article>
+            <article class="chat-message assistant"><strong>燃灯</strong><p>💡 <strong>灵感对话模式</strong>：说出你的创作想法，我会追问、澄清、完善，最后生成一份作品雏形（故事背景 + 角色框架 + 世界观 + 第一章钩子）。现在，请告诉我你的灵感。</p></article>
           </div>
           <form id="chat-form" class="chat-composer">
-            <label for="chat-input">本轮目标</label>
-            <textarea id="chat-input" rows="4" maxlength="12000" placeholder="例如：检查现有资产，帮我把第一篇推进到可写状态。" required></textarea>
+            <label for="chat-input">你的想法</label>
+            <textarea id="chat-input" rows="4" maxlength="12000" placeholder="例如：我想写一个关于时间循环的小说，主角每天醒来都回到同一天，但每次循环都会少一个他在乎的人…" required></textarea>
             <div class="composer-actions">
               <span id="chat-status" role="status"></span>
-              <button id="chat-submit" class="primary-button" type="submit">发送给 Goethe</button>
+              <button id="chat-submit" class="primary-button" type="submit">发送灵感</button>
+              <button id="chat-prototype" class="primary-button" type="button" hidden style="margin-left:8px">✨ 生成作品雏形</button>
             </div>
           </form>
         </section>

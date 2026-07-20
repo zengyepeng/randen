@@ -7,7 +7,7 @@ import { switchView, openDocument, routeFromLocation } from "./router.js";
 import { renderWorkspace } from "./views/dashboard.js";
 import { initCreationWizard, initAIAssistants } from "./views/tools.js";
 import { updateEditorCount } from "./views/editor.js";
-import { chooseAgent, appendChatMessage } from "./views/agents.js";
+import { chooseAgent, appendChatMessage, handleChatSubmit, initPrototypeButton } from "./views/agents.js";
 import { renderContinuity } from "./views/continuity.js";
 import { renderEmotionDashboard } from "./views/emotion.js";
 import {
@@ -139,6 +139,7 @@ function bindEvents() {
   const chatForm = $("#chat-form");
   if (chatForm) chatForm.addEventListener("submit", submitChat);
   $$("[data-agent]").forEach((btn) => btn.addEventListener("click", () => chooseAgent(btn.dataset.agent)));
+  initPrototypeButton();
 
   // Continuity
   const contRefresh = $("#continuity-refresh");
