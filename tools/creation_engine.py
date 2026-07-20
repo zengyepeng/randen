@@ -880,14 +880,14 @@ def _gen_first_chapter_hook(premise: str, first_arc: dict) -> str:
 
 # ── 5: EPUB 支持 ──────────────────────────────────────────────
 
-def extract_text_from_epub(content_or_path: str, is_bytes: bool = False) -> dict:
+def extract_text_from_epub(content_or_path, is_bytes: bool = False) -> dict:
     """从 EPUB 文件或二进制内容提取纯文本"""
     if is_bytes:
-        # Binary content from file upload
         try:
             from zipfile import ZipFile
             import io
-            zf = ZipFile(io.BytesIO(content_or_path.encode('latin-1') if isinstance(content_or_path, str) else content_or_path))
+            data = content_or_path if isinstance(content_or_path, bytes) else content_or_path.encode('latin-1')
+            zf = ZipFile(io.BytesIO(data))
             return _parse_epub_zip(zf)
         except Exception as e:
             return {"error": f"EPUB 解析失败: {str(e)[:100]}"}

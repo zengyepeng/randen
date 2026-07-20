@@ -367,22 +367,26 @@ function _initFileUpload() {
 
 function _readFile(file, textarea, dropzone) {
   if (file.name.endsWith('.epub')) {
-    // EPUB: send raw bytes to backend for extraction
     if (dropzone) dropzone.querySelector("span").textContent = "⏳ 解析 EPUB…";
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const data = await _ewPost("/api/epub", { text: reader.result });
+        // Convert ArrayBuffer to base64 to avoid huge JSON
+        const bytes = new Uint8Array(reader.result);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const b64 = btoa(binary);
+        const data = await _ewPost("/api/epub", { text: b64 });
         if (data.ok && textarea) {
           textarea.value = data.text;
-          if (dropzone) dropzone.querySelector("span").textContent = `📖 ${data.title} (${data.char_count}字, ${data.paragraphs}段) 已解析`;
+          if (dropzone) dropzone.querySelector("span").textContent = `📖 ${data.title || file.name} (${data.char_count}字) 已解析`;
         } else if (data.error) {
           alert(data.error);
           if (dropzone) dropzone.querySelector("span").textContent = "📂 拖拽 .txt/.md/.epub 文件到此处，或点击选择";
         }
       } catch(e) { alert("EPUB 解析失败: " + (e.message||e)); }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
     return;
   }
   if (!file.name.endsWith(".txt") && !file.name.endsWith(".md")) {

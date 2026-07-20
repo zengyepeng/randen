@@ -442,12 +442,20 @@ def handle_generate_outline(app, params: dict[str, Any]) -> dict[str, Any]:
 
 
 def handle_epub_extract(app, params: dict[str, Any]) -> dict[str, Any]:
-    """EPUB 文本提取"""
+    """EPUB 文本提取 — 接受 base64 编码内容"""
     from tools.creation_engine import extract_text_from_epub
+    import base64
     text = str(params.get("text") or "")
-    if len(text) < 100:
-        raise RuntimeError("请上传 EPUB 文件内容")
-    return extract_text_from_epub(text) if text.startswith("PK") else {"error": "不是有效的 EPUB 文件"}
+    if not text:
+        raise RuntimeError("请上传 EPUB 文件")
+    # Decode base64 content
+    try:
+        raw = base64.b64decode(text)
+    except Exception:
+        raise RuntimeError("文件编码错误，请重新上传")
+    if len(raw) < 100:
+        raise RuntimeError("文件内容过短")
+    return extract_text_from_epub(raw, is_bytes=True)
 
 
 def handle_ai_dissect(app, params: dict[str, Any]) -> dict[str, Any]:
