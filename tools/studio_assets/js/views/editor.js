@@ -53,19 +53,19 @@ export function initWritePipeline() {
     if (status) status.textContent = "正在组装上下文 + AI 写作 + 审查…";
 
     try {
-      const res = await fetch("/api/write", {
+      const res = await fetch("/api/v6-pipeline", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Randen-Studio": "1" },
-        body: JSON.stringify({ target_words: words, guidance }),
+        body: JSON.stringify({ action: "quick", premise: guidance || "推进到下一章", target_words: words, guidance }),
       });
       const data = await res.json();
-      if (data.result?.content || data.result) {
-        const chapter = typeof data.result === "string" ? data.result : (data.result.content || JSON.stringify(data.result, null, 2));
+      if (data.chapter) {
         const editor = $("#document-editor");
-        if (editor) editor.value = chapter;
+        if (editor) editor.value = data.chapter;
         updateEditorCount();
-        $("#editor-path").textContent = "新章节 (AI 生成)";
-        if (status) status.textContent = "✅ 写作完成！点击保存按钮保存到项目。";
+        const chapLabel = data.chapter_num ? `第${data.chapter_num}章` : "新章节";
+        $("#editor-path").textContent = `${chapLabel} (v6流水线)`;
+        if (status) status.textContent = `✅ 完成 | 原创性:${data.originality_score||"?"}分 | ${data.actual_words||0}字`;
         // Refresh workspace
         try {
           const { loadWorkspace } = await import("../api.js");

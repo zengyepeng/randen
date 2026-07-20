@@ -972,6 +972,31 @@ def handle_adapt_drama(app, params):
         return adapt_chapter_to_drama(text, title, episodes)
 
 
+def handle_v6_pipeline(app, params):
+    """v6.0 全栈工业化写作流水线"""
+    from tools.v6_pipeline import execute_v6_pipeline, write_chapter_v6
+    action = str(params.get("action", "write"))
+    if action == "quick":
+        return write_chapter_v6(
+            str(params.get("premise", "")),
+            int(params.get("chapter_num", 1)),
+            str(params.get("previous", "")),
+            int(params.get("target_words", 3000)),
+            str(params.get("guidance", "")),
+        )
+    return execute_v6_pipeline(
+        chapter_outline=str(params.get("chapter_outline", "")),
+        chapter_num=int(params.get("chapter_num", 1)),
+        previous_summary=str(params.get("previous_summary", "")),
+        target_words=int(params.get("target_words", 3000)),
+        guidance=str(params.get("guidance", "")),
+        character_context=str(params.get("character_context", "")),
+        materials=params.get("materials"),
+        needs_negotiation=bool(params.get("needs_negotiation", False)),
+        negotiation_chars=params.get("negotiation_chars"),
+    )
+
+
 # ═══════════════════════════════════════════════════════════════
 # v6.0 扩展能力处理函数
 # ═══════════════════════════════════════════════════════════════
