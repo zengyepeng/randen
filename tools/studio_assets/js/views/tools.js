@@ -1,9 +1,30 @@
 /* ===== Creation Wizard (modal dialog) — v2: 独立步骤 + 文件上传 + 多书管理 ===== */
 import { $, $$ } from "../utils.js";
 
-let _ewBooks = []; // 已拆书目 [{title, result, time}]
+
+let _ewBooks = [];
+
+// Restore dissected books from localStorage
+try {
+  const saved = localStorage.getItem('randen-dissected-books');
+  if (saved) _ewBooks = JSON.parse(saved);
+} catch(_) { _ewBooks = []; }
+
+function _saveBooksToStorage() {
+  try { localStorage.setItem('randen-dissected-books', JSON.stringify(_ewBooks.slice(0, 20))); } catch(_) {}
+}
+ // 已拆书目 [{title, result, time}]
 
 export function initCreationWizard() {
+  // Auto-open wizard on first visit
+  if (!localStorage.getItem('randen-wizard-visited')) {
+    localStorage.setItem('randen-wizard-visited', '1');
+    setTimeout(() => {
+      const dlg = $("#engine-dialog");
+      if (dlg && !dlg.open) { dlg.showModal(); goStep(1); }
+    }, 800);
+  }
+
   $("#engine-launch")?.addEventListener("click", () => {
     const dlg = $("#engine-dialog");
     if (dlg) { dlg.showModal(); goStep(parseInt(localStorage.getItem("randen-wizard-step")||"1")); }
@@ -27,7 +48,19 @@ export function initCreationWizard() {
   $$(".ed-prev").forEach(btn => {
     btn.addEventListener("click", () => { const s = parseInt(btn.dataset.prev); if (s) goStep(s); });
   });
-  $(".ed-done")?.addEventListener("click", () => $("#engine-dialog")?.close());
+  
+  $(".ed-done")?.addEventListener("click", () => {
+    $("#engine-dialog")?.close();
+    // Switch to writing view in the studio
+    try {
+      import("../router.js").then(m => m.switchView("chapters", true));
+    } catch(_) {}
+  });
+  $("#ew-start-writing")?.addEventListener("click", () => {
+    $("#engine-dialog")?.close();
+    try { import("../router.js").then(m => { m.switchView("chapters", true); }); } catch(_) {}
+  });
+
 
   // Step 1: Market
   $("#ew-market")?.addEventListener("click", async () => {
@@ -80,6 +113,35 @@ export function initCreationWizard() {
   });
 
   // Step 4: Opening
+  
+  // Export full report button
+  $("#ew-export-report")?.addEventListener("click", () => {
+    const parts = [];
+    parts.push('# 创作准备报告\n');
+    parts.push(`*生成时间: ${new Date().toLocaleString()}*\n`);
+    
+    const market = document.querySelector('#ew-market-out')?.textContent;
+    if (market && !market.includes('分析中')) parts.push('## 市场分析\n' + market);
+    
+    if (_ewBooks.length) {
+      parts.push('## 拆书分析 (' + _ewBooks.length + '本)\n');
+      _ewBooks.forEach(b => parts.push('### ' + (b.title||'未命名') + '\n```json\n' + JSON.stringify(b.result,null,2) + '\n```\n'));
+    }
+    
+    const idea = document.querySelector('#ew-idea-out')?.textContent;
+    if (idea && !idea.includes('分析中')) parts.push('## 脑洞\n' + idea);
+    
+    const opening = document.querySelector('#ew-opening-out')?.textContent;
+    if (opening && !opening.includes('诊断中')) parts.push('## 开篇诊断\n' + opening);
+    
+    const blob = new Blob([parts.join('\n\n')], {type:'text/markdown'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '创作准备报告_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.md';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
   $("#ew-opening")?.addEventListener("click", async () => {
     const text = $("#ew-opening-text")?.value || "";
     const btn = $("#ew-opening"); const out = $("#ew-opening-out");
@@ -127,7 +189,22 @@ export function initCreationWizard() {
   <p class="ew-tip">📝 ${_esc(data.writing_tip)}</p>
 </div>`;
       }
+
       _addSaveButton(out, "outline", data, data.title_hook || "大纲");
+      // Add apply-to-project button
+      const applyBtn = document.createElement('button');
+      applyBtn.className = 'ew-save-btn';
+      applyBtn.textContent = '📝 写入项目大纲';
+      applyBtn.style.cssText = 'margin-left:8px';
+      applyBtn.addEventListener('click', async () => {
+        applyBtn.disabled = true; applyBtn.textContent = '写入中...';
+        try {
+          await _ewPost('/api/save', { type: 'outline_full', data: data, title: data.title_hook || '大纲' });
+          applyBtn.textContent = '✅ 已写入 src/outline.md';
+        } catch(e) { applyBtn.textContent = '⚠ 失败'; }
+      });
+      out.querySelector('.ew-save-btn')?.after(applyBtn);
+
     } catch (e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
@@ -175,6 +252,7 @@ function _initFileUpload() {
     try {
       const data = await _ewPost("/api/dissect/deep", { text, title: title || "未命名" });
       _ewBooks.push({ title: title || "未命名", result: data, time: new Date().toLocaleTimeString() });
+      _saveBooksToStorage();
       if (out) _showDissectResult(out, data);
       _renderBookList();
     } catch (e) { if (out) _ewErr(out, e); }

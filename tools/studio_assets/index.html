@@ -537,6 +537,7 @@
   <dialog id="engine-dialog" class="engine-dialog">
     <div class="ed-header">
       <h2>🏮 创作向导</h2>
+      <button id="ew-export-report" class="quiet-button" type="button" style="font-size:.75rem;margin-left:auto" title="导出完整创作准备报告">📥 导出报告</button>
       <div class="ed-steps" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1">
         <span class="ed-dot active">1</span><span class="ed-line"></span>
         <span class="ed-dot">2</span><span class="ed-line"></span>
@@ -610,7 +611,8 @@
         <div id="ew-opening-out" class="ew-out" hidden></div>
         <div class="ed-actions">
           <button class="ed-prev" data-prev="3">← 上一步</button>
-          <button class="ed-done primary-button" type="button">✓ 完成引导，开始写作</button>
+          <button class="ed-done primary-button" type="button">✓ 完成引导</button>
+          <button id="ew-start-writing" class="ed-next" type="button">✍️ 开始写第一章 →</button>
         </div>
       </div>
       <!-- Step 5: FAQ -->
