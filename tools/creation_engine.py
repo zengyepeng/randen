@@ -691,3 +691,302 @@ def dissect_multi_books(books: list[dict[str, str]]) -> dict[str, Any]:
         "count": len(results),
         "merged": merged,
     }
+
+# ── 7 & 8: 保存到项目 + 大纲生成 + EPUB + 角色模板 ─────────────────
+
+def save_wizard_result(project_root: str, result_type: str, data: dict, title: str = "") -> dict:
+    """将向导结果保存到项目文件"""
+    from pathlib import Path
+    root = Path(project_root)
+    out_dir = root / "data" / "wizard_outputs"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    ts = __import__("time").strftime("%Y%m%d_%H%M%S")
+    filename = f"{result_type}_{ts}.md"
+    filepath = out_dir / filename
+
+    lines = [f"# {result_type}: {title}", f"*生成时间: {ts}*", ""]
+    if result_type == "dissect":
+        lines.append(f"**书名**: {data.get('title', '?')}")
+        lines.append(f"**字数**: {data.get('estimated_words', 0)}")
+        lines.append(f"**节奏**: {data.get('rhythm', '?')}")
+        lines.append(f"**钩子**: {', '.join(data.get('hooks_detected', []))}")
+        lines.append(f"**金手指**: {', '.join(data.get('golden_finger_style', []))}")
+        if data.get("chapter_details"):
+            lines.append("\n## 分章拆解")
+            for ch in data["chapter_details"]:
+                lines.append(f"- Ch{ch['chapter']}: {ch['words']}字 | {', '.join(ch.get('hooks',[]))} | {ch.get('key_event','')}")
+    elif result_type == "idea":
+        s = data.get("setting", {})
+        lines.append(f"**分类**: {data.get('genre', '?')}")
+        lines.append(f"**梗概**: {s.get('premise', '')}")
+        lines.append(f"**金手指**: {s.get('golden_finger', '')}")
+        lines.append(f"**代价**: {s.get('golden_finger_cost', '')}")
+        lines.append(f"**情绪**: {s.get('target_emotion', '')}")
+    elif result_type == "opening":
+        lines.append(f"**综合得分**: {data.get('score', 0)}/100")
+        lines.append(f"**判定**: {data.get('verdict', '')}")
+        for item in data.get("items", []):
+            status = "✅" if item.get("passed") else "❌"
+            lines.append(f"- {status} {item.get('check', '')}")
+
+    filepath.write_text("\n".join(lines), encoding="utf-8")
+    return {"ok": True, "path": str(filepath.relative_to(root)), "filename": filename}
+
+
+CHARACTER_TEMPLATES = {
+    "系统流": {
+        "name": "（填写）",
+        "identity": "身份：普通/底层，给读者代入感",
+        "goal": "短期：利用系统改善处境 | 长期：站在巅峰/改变世界",
+        "flaw": "自卑/冲动/过于谨慎——让角色有成长空间",
+        "golden_finger": "系统（签到/任务/反套路）",
+        "relationship_anchor": "一个见证主角变化的人（朋友/同事/网友）",
+    },
+    "重生穿越": {
+        "name": "（填写）",
+        "identity": "前世身份 → 今世身份（制造落差）",
+        "goal": "弥补前世遗憾 / 阻止灾难 / 改变命运",
+        "flaw": "带着前世记忆的傲慢 / 过于依赖先知导致蝴蝶效应",
+        "golden_finger": "先知记忆+现代知识/技能",
+        "relationship_anchor": "前世亏欠的人 / 今世要保护的人",
+    },
+    "规则怪谈": {
+        "name": "（填写）",
+        "identity": "普通人 / 特殊体质（能看见隐藏规则）",
+        "goal": "活下去 / 通关 / 破解规则背后真相",
+        "flaw": "好奇心过强 / 不信任他人 / 过度谨慎",
+        "golden_finger": "规则提示 / 免疫一次惩罚 / 规则漏洞发现",
+        "relationship_anchor": "第一个遇到的同伴（可能背叛或牺牲）",
+    },
+    "默认": {
+        "name": "（填写）",
+        "identity": "填一个让读者能代入的身份",
+        "goal": "短期目标和长期目标的冲突",
+        "flaw": "至少一个性格缺陷（完美角色最无聊）",
+        "golden_finger": "主角的特殊能力/优势",
+        "relationship_anchor": "对主角最重要的人",
+    },
+}
+
+
+def get_character_guide(genre: str = "默认") -> dict:
+    """获取角色创建引导"""
+    tmpl = CHARACTER_TEMPLATES.get(genre, CHARACTER_TEMPLATES["默认"])
+    return {
+        "genre": genre,
+        "template": tmpl,
+        "tips": [
+            "名字是第一印象——选一个让人记住的名字",
+            "缺陷比优点重要——不完美的角色才有成长空间",
+            "给角色一个'口头禅'或'习惯动作'，立竿见影",
+            "关系锚点：至少有一个角色能让主角展现软肋",
+        ],
+    }
+
+
+def generate_outline_from_idea(premise: str, genre: str = "") -> dict:
+    """从脑洞生成大纲框架"""
+    # 基于梗概推断篇章结构
+    arcs = _estimate_arcs(premise, genre)
+    return {
+        "title_hook": _gen_title_hook(premise),
+        "tagline": premise[:80],
+        "arcs": arcs,
+        "total_chapters_estimate": sum(a["chapters"] for a in arcs),
+        "first_chapter_hook": _gen_first_chapter_hook(premise, arcs[0] if arcs else {}),
+        "writing_tip": "大纲是地图不是牢笼,写到30%可以根据实际情况调整后面的走向。",
+    }
+
+
+def _estimate_arcs(premise: str, genre: str) -> list[dict]:
+    """估算篇章结构"""
+    # 默认3篇结构
+    arcs = [
+        {"name": "起·入局", "chapters": 30, "goal": "主角获得金手指/穿越,适应新环境,建立初步人际关系,完成第一次小爆发",
+         "key_event": "第一个小高潮（打脸/突破/获得认可）"},
+        {"name": "承·发展", "chapters": 50, "goal": "主角深入世界观,遭遇第一道真正的阻碍,能力和心性双重成长",
+         "key_event": "中段重大转折（失去重要的人/发现世界真相/遭遇宿敌）"},
+        {"name": "转合·收官", "chapters": 40, "goal": "所有伏笔开始回收,主角面对最终挑战,完成角色弧光",
+         "key_event": "最终决战/最终揭秘,给出让读者满意的结局"},
+    ]
+    if "短篇" in premise or len(premise) < 20:
+        arcs = [{"name": "全篇", "chapters": 15, "goal": "起承转合压缩在15章", "key_event": "结尾反转"}]
+    return arcs
+
+
+def _gen_title_hook(premise: str) -> str:
+    """生成书名建议"""
+    keywords = ["系统", "穿越", "重生", "废柴", "签到", "规则", "修真", "都市"]
+    found = [k for k in keywords if k in premise]
+    if "签到" in premise: return "《签到XXX天后,我XXX了》"
+    if "系统" in premise: return "《我的XXX系统》"
+    if "重生" in premise or "穿越" in premise: return "《重生XXX:这一世XXX》"
+    if found: return f"《{found[0]}之XXX》"
+    return "《XXX》（根据你的灵感自定义）"
+
+
+def _gen_first_chapter_hook(premise: str, first_arc: dict) -> str:
+    """生成第一章钩子建议"""
+    if "系统" in premise:
+        return f"开篇钩子: 主角在人生最低谷→系统激活→{first_arc.get('key_event','第一次用系统能力改变现状')}。第一句用系统提示音开头以最快建立世界观。"
+    if "重生" in premise or "穿越" in premise:
+        return f"开篇钩子: 一觉醒来发现回到X年前→利用前世记忆做第一件事→{first_arc.get('key_event','改变第一个关键事件')}。用认知落差制造爽感。"
+    return f"开篇钩子: 主角的普通生活被打破→遇见改变命运的契机→{first_arc.get('key_event','')}"
+
+
+# ── 5: EPUB 支持 ──────────────────────────────────────────────
+
+def extract_text_from_epub(filepath: str) -> dict:
+    """从 EPUB 文件提取纯文本"""
+    from pathlib import Path
+    path = Path(filepath)
+    if not path.exists():
+        return {"error": f"文件不存在: {filepath}"}
+    if not path.suffix.lower() == ".epub":
+        return {"error": "仅支持 .epub 格式"}
+
+    try:
+        from zipfile import ZipFile
+        from xml.etree import ElementTree as ET
+
+        text_parts = []
+        with ZipFile(path, 'r') as zf:
+            for name in zf.namelist():
+                if name.endswith(('.xhtml', '.html', '.htm')):
+                    with zf.open(name) as f:
+                        try:
+                            tree = ET.fromstring(f.read())
+                            ns = {'x': 'http://www.w3.org/1999/xhtml'}
+                            # Extract all text
+                            for elem in tree.iter():
+                                if elem.text and elem.text.strip():
+                                    tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
+                                    if tag in ('p', 'h1', 'h2', 'h3', 'h4', 'div'):
+                                        text_parts.append(elem.text.strip())
+                        except Exception:
+                            continue
+
+            # Fallback: try plain text extraction from HTML
+            if not text_parts:
+                for name in zf.namelist():
+                    if name.endswith(('.xhtml', '.html', '.htm')):
+                        with zf.open(name) as f:
+                            content = f.read().decode('utf-8', errors='ignore')
+                            # Simple strip tags
+                            cleaned = re.sub(r'<[^>]+>', '\n', content)
+                            cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+                            text_parts.append(cleaned)
+
+        full_text = '\n\n'.join(text_parts)
+        return {
+            "ok": True,
+            "title": path.stem,
+            "text": full_text,
+            "char_count": len(full_text),
+            "paragraphs": len(text_parts),
+        }
+    except ImportError:
+        return {"error": "EPUB 解析需要 zipfile 和 xml 库（Python 标准库自带）"}
+    except Exception as e:
+        return {"error": f"EPUB 解析失败: {str(e)[:100]}"}
+
+
+# ── 7: AI 深度拆书 ────────────────────────────────────────────
+
+def ai_deep_dissect(text: str, title: str = "", llm_client=None) -> dict:
+    """AI 深度拆书: 调用 LLM 进行深度分析
+    
+    需要传入 llm_client (openai-compatible client)。如无 client 则降级为本地分析。
+    """
+    if not llm_client:
+        result = dissect_book_deep(text, title)
+        result["note"] = "本地分析模式（未提供 LLM）"
+        return result
+
+    # 截取前6000字符避免超token
+    sample = text[:6000]
+
+    prompt = f"""你是一位专业的网文编辑。请分析以下小说片段，用 JSON 格式返回:
+
+{{
+  "title": "书名",
+  "hook_quality": "开篇钩子评分(1-10)",
+  "hook_reason": "为什么这个钩子有效/无效 (50字内)",
+  "golden_finger": "金手指类型和分析 (50字内)",
+  "pacing_score": "节奏评分(1-10)",
+  "character_appeal": "主角魅力点 (50字内)",
+  "emotion_curve": "情绪走向分析 (50字内)",
+  "market_potential": "市场潜力评估 (50字内)",
+  "writing_quality": "文笔评分(1-10)",
+  "improvement": "最应该改进的1-2个点 (80字内)"
+}}
+
+小说片段:
+{sample[:4000]}"""
+
+    try:
+        import os
+        model = os.environ.get("LLM_MODEL", "deepseek-chat")
+        response = llm_client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=800,
+        )
+        content = response.choices[0].message.content or "{}"
+        # Try to extract JSON
+        json_match = re.search(r'\{[\s\S]*\}', content)
+        if json_match:
+            ai_result = json.loads(json_match.group())
+            ai_result["title"] = title or ai_result.get("title", "未知")
+            ai_result["type"] = "ai_deep"
+            ai_result["estimated_words"] = len(text)
+            return ai_result
+    except Exception as e:
+        pass
+
+    # Fallback to local
+    result = dissect_book_deep(text, title)
+    result["note"] = "AI分析失败，降级为本地分析"
+    return result
+
+
+# ── 8: AI 仿写生成 ────────────────────────────────────────────
+
+def ai_style_imitate(reference_text: str, premise: str, style: str = "", llm_client=None) -> dict:
+    """AI 仿写: 基于参考作品风格, 用给定梗概生成一段开篇"""
+    if not llm_client:
+        return {"error": "仿写需要 LLM 客户端, 请先配置环境变量中的 LLM_API_KEY"}
+
+    ref_sample = reference_text[:2000]
+
+    prompt = f"""你是小说仿写专家。学习以下参考文风（节奏、句式、描写方式），然后用这个风格写一段约 300 字的小说开篇。
+
+【参考风格】
+{ref_sample}
+
+【要写的故事】
+{premise}
+
+要求:
+1. 模仿参考文的节奏和句式(不模仿具体内容)
+2. 必须有钩子——第一句话就抓人
+3. 写 300 字左右
+4. 不要用'微微一笑''眼中闪过一丝'等 AI 套话
+
+直接输出开篇内容,不需要任何说明。"""
+
+    try:
+        import os
+        model = os.environ.get("LLM_MODEL", "deepseek-chat")
+        response = llm_client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=600,
+        )
+        content = response.choices[0].message.content or ""
+        return {"ok": True, "generated_text": content.strip(), "style": style or "参考风格"}
+    except Exception as e:
+        return {"error": f"仿写失败: {str(e)[:100]}"}

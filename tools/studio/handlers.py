@@ -415,3 +415,72 @@ def handle_merge_dissections(app, params: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(results, list):
         raise RuntimeError("请提供拆解结果列表")
     return merge_dissections(results)
+
+def handle_save_result(app, params: dict[str, Any]) -> dict[str, Any]:
+    """保存向导结果到项目"""
+    from tools.creation_engine import save_wizard_result
+    rtype = str(params.get("type") or "unknown")
+    data = params.get("data", {})
+    title = str(params.get("title") or "")
+    return save_wizard_result(str(app.project_root), rtype, data, title)
+
+
+def handle_character_guide(app, params: dict[str, Any]) -> dict[str, Any]:
+    """角色创建引导"""
+    from tools.creation_engine import get_character_guide
+    genre = str(params.get("genre") or "默认")
+    return get_character_guide(genre)
+
+
+def handle_generate_outline(app, params: dict[str, Any]) -> dict[str, Any]:
+    """从脑洞生成大纲"""
+    from tools.creation_engine import generate_outline_from_idea
+    premise = str(params.get("premise") or "")
+    if not premise.strip():
+        raise RuntimeError("请先输入灵感")
+    return generate_outline_from_idea(premise, str(params.get("genre") or ""))
+
+
+def handle_epub_extract(app, params: dict[str, Any]) -> dict[str, Any]:
+    """EPUB 文本提取"""
+    from tools.creation_engine import extract_text_from_epub
+    text = str(params.get("text") or "")
+    if len(text) < 100:
+        raise RuntimeError("请上传 EPUB 文件内容")
+    return extract_text_from_epub(text) if text.startswith("PK") else {"error": "不是有效的 EPUB 文件"}
+
+
+def handle_ai_dissect(app, params: dict[str, Any]) -> dict[str, Any]:
+    """AI 深度拆书"""
+    from tools.creation_engine import ai_deep_dissect
+    text = str(params.get("text") or "")
+    title = str(params.get("title") or "")
+    if len(text) < 200:
+        raise RuntimeError("正文太短，请提供完整片段")
+    try:
+        import openai
+        client = openai.OpenAI(
+            api_key=os.environ.get("LLM_API_KEY", ""),
+            base_url=os.environ.get("LLM_BASE_URL", "https://api.deepseek.com/v1"),
+        )
+        return ai_deep_dissect(text, title, client)
+    except ImportError:
+        return ai_deep_dissect(text, title)
+
+
+def handle_ai_imitate(app, params: dict[str, Any]) -> dict[str, Any]:
+    """AI 仿写生成"""
+    from tools.creation_engine import ai_style_imitate
+    ref_text = str(params.get("reference_text") or "")
+    premise = str(params.get("premise") or "")
+    if not ref_text.strip() or not premise.strip():
+        raise RuntimeError("请提供参考文本和梗概")
+    try:
+        import openai
+        client = openai.OpenAI(
+            api_key=os.environ.get("LLM_API_KEY", ""),
+            base_url=os.environ.get("LLM_BASE_URL", "https://api.deepseek.com/v1"),
+        )
+        return ai_style_imitate(ref_text, premise, "", client)
+    except ImportError:
+        return {"error": "需要安装 openai 库: pip install openai"}

@@ -6,7 +6,7 @@ let _ewBooks = []; // 已拆书目 [{title, result, time}]
 export function initCreationWizard() {
   $("#engine-launch")?.addEventListener("click", () => {
     const dlg = $("#engine-dialog");
-    if (dlg) { dlg.showModal(); goStep(1); }
+    if (dlg) { dlg.showModal(); goStep(parseInt(localStorage.getItem("randen-wizard-step")||"1")); }
   });
   $("#engine-dialog-close")?.addEventListener("click", () => $("#engine-dialog")?.close());
   $("#engine-dialog")?.addEventListener("click", (e) => { if (e.target === e.currentTarget) e.target.close(); });
@@ -100,6 +100,45 @@ export function initCreationWizard() {
     } catch (e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
+  
+  // Outline generation
+  $("#ew-gen-outline")?.addEventListener("click", async () => {
+    const premise = $("#ew-idea-premise")?.value || "";
+    if (!premise.trim()) return;
+    const btn = $("#ew-gen-outline"); const out = $("#ew-outline-out");
+    if (btn) btn.disabled = true;
+    if (out) { out.hidden = false; out.textContent = "生成大纲中…"; }
+    try {
+      const data = await _ewPost("/api/generate_outline", { premise });
+      if (out) {
+        out.innerHTML = `
+<div class="ew-item ew-outline">
+  <h4>📖 ${_esc(data.title_hook)}</h4>
+  <p style="font-size:.85rem;color:var(--text-secondary)">${_esc(data.tagline)}</p>
+  <p style="font-size:.82rem"><strong>预估总章数: ${data.total_chapters_estimate} 章</strong></p>
+  ${data.arcs.map(a => `
+  <div class="ew-arc-card">
+    <strong>📑 ${_esc(a.name)}</strong>
+    <small>约 ${a.chapters} 章</small>
+    <p style="margin:2px 0;font-size:.8rem;color:var(--text-secondary)">目标: ${_esc(a.goal)}</p>
+    <p style="margin:0;font-size:.78rem;color:var(--text-tertiary)">⭐ ${_esc(a.key_event)}</p>
+  </div>`).join('')}
+  <p class="ew-tip" style="margin-top:8px">💡 ${_esc(data.first_chapter_hook)}</p>
+  <p class="ew-tip">📝 ${_esc(data.writing_tip)}</p>
+</div>`;
+      }
+      _addSaveButton(out, "outline", data, data.title_hook || "大纲");
+    } catch (e) { if (out) _ewErr(out, e); }
+    if (btn) btn.disabled = false;
+  });
+
+  // Show outline button after idea result appears
+  const ideaCheck = setInterval(() => {
+    const out = $("#ew-idea-out");
+    const genBtn = $("#ew-gen-outline");
+    if (out && !out.hidden && genBtn) { genBtn.hidden = false; clearInterval(ideaCheck); }
+  }, 500);
+
   loadFAQIntoWizard();
 }
 
@@ -242,7 +281,7 @@ function _initMergeButton() {
 }
 
 /* ── Navigation ── */
-function goStep(n) {
+function goStep(n) {\n  localStorage.setItem("randen-wizard-step", String(n));
   $$(".ed-step").forEach(el => el.classList.toggle("active", parseInt(el.dataset.step) === n));
   $$(".ed-dot").forEach((el, i) => {
     el.classList.remove("active", "done");
@@ -317,4 +356,21 @@ async function loadFAQIntoWizard() {
       root.append(dt);
     });
   } catch (_) { root.innerHTML = "<small>加载失败</small>"; }
+}
+
+function _addSaveButton(container, resultType, data, title) {
+  if (!container || container.querySelector('.ew-save-btn')) return;
+  const btn = document.createElement('button');
+  btn.className = 'ew-save-btn';
+  btn.textContent = '💾 保存到项目';
+  btn.addEventListener('click', async () => {
+    btn.disabled = true; btn.textContent = '保存中...';
+    try {
+      const r = await _ewPost('/api/save', { type: resultType, data: data, title: title });
+      btn.textContent = '✅ 已保存';
+      btn.style.background = '#22c55e';
+      setTimeout(() => { btn.textContent = '💾 保存到项目'; btn.style.background = ''; }, 2000);
+    } catch(e) { btn.textContent = '⚠ 失败'; btn.disabled = false; }
+  });
+  container.prepend(btn);
 }

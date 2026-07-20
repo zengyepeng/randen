@@ -31,6 +31,12 @@ from .handlers import (
     handle_idea,
     handle_opening,
     handle_faq,
+    handle_save_result,
+    handle_character_guide,
+    handle_generate_outline,
+    handle_epub_extract,
+    handle_ai_dissect,
+    handle_ai_imitate,
 )
 
 # (处理器, 是否需要项目已初始化)
@@ -54,6 +60,12 @@ POST_ROUTES: dict[str, tuple[Any, bool]] = {
     "/api/idea":              (handle_idea,            False),
     "/api/opening":           (handle_opening,         False),
     "/api/faq":               (handle_faq,             False),
+    "/api/save":              (handle_save_result,     False),
+    "/api/character_guide":   (handle_character_guide, False),
+    "/api/generate_outline":  (handle_generate_outline, False),
+    "/api/epub":              (handle_epub_extract,    False),
+    "/api/ai_dissect":        (handle_ai_dissect,      False),
+    "/api/ai_imitate":        (handle_ai_imitate,      False),
     "/api/write":             (handle_write,           True),
     "/api/review":            (handle_review,          True),
     "/api/sync":              (handle_sync,            True),
