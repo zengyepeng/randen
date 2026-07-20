@@ -58,6 +58,7 @@ export async function handleChatSubmit(event) {
   appendChatMessage("user", "你", message);
   input.value = "";
   if (status) status.textContent = "思考中…";
+  const typing = $("#chat-typing"); if (typing) typing.hidden = false;
 
   if (agent === "inspire") {
     _conversationRounds++;
@@ -112,7 +113,20 @@ export async function handleChatSubmit(event) {
   }
 
   if (status) status.textContent = "";
+  const typing = $("#chat-typing"); if (typing) typing.hidden = true;
 }
+
+
+  // Quick-start inspiration chips
+  $$(".qs-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const prompt = chip.dataset.prompt;
+      if (prompt) {
+        const input = $("#chat-input");
+        if (input) { input.value = prompt; input.focus(); }
+      }
+    });
+  });
 
 export function initPrototypeButton() {
   $("#chat-prototype")?.addEventListener("click", async () => {
@@ -168,6 +182,7 @@ export function initPrototypeButton() {
       appendChatMessage("assistant", "燃灯", "抱歉，生成失败。请检查 API 配置后重试。");
     }
     if (btn) btn.disabled = false;
-    if (status) status.textContent = "";
+    const typing2 = $("#chat-typing"); if (typing2) typing2.hidden = true;
+  if (status) status.textContent = "";
   });
 }

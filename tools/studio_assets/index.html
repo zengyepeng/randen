@@ -157,11 +157,20 @@
             </div>
           </div>
           <div id="chat-log" class="chat-log" aria-live="polite">
+            <div id="chat-typing" class="chat-typing" hidden><span></span><span></span><span></span> 燃灯正在思考…</div>
             <article class="chat-message assistant"><strong>燃灯</strong><p>💡 <strong>灵感对话模式</strong>：说出你的创作想法，我会追问、澄清、完善，最后生成一份作品雏形（故事背景 + 角色框架 + 世界观 + 第一章钩子）。现在，请告诉我你的灵感。</p></article>
           </div>
           <form id="chat-form" class="chat-composer">
             <label for="chat-input">你的想法</label>
             <textarea id="chat-input" rows="4" maxlength="12000" placeholder="例如：我想写一个关于时间循环的小说，主角每天醒来都回到同一天，但每次循环都会少一个他在乎的人…" required></textarea>
+            <div class="inspire-quickstart">
+              <span class="quickstart-label">快速开始：</span>
+              <button class="quiet-button qs-chip" data-prompt="我想写一个关于时间循环的小说，主角每天醒来都回到同一天，但每次循环都会少一个他在乎的人">⏰ 时间循环</button>
+              <button class="quiet-button qs-chip" data-prompt="一个被公司裁员的程序员，穿越到了修真世界，靠写代码修仙">💻 代码修仙</button>
+              <button class="quiet-button qs-chip" data-prompt="深夜十一点五十九分，手机收到一条规则怪谈，每次违反规则都会永久失去一种感官">👻 规则怪谈</button>
+              <button class="quiet-button qs-chip" data-prompt="重生回到高考前，这一次我要改写所有人的人生">🔄 重生逆袭</button>
+              <button class="quiet-button qs-chip" data-prompt="我想写一个发生在未来的故事，AI 已经取代了所有工作，人类靠'情感值'生活">🤖 AI 未来</button>
+            </div>
             <div class="composer-actions">
               <span id="chat-status" role="status"></span>
               <button id="chat-submit" class="primary-button" type="submit">发送灵感</button>
