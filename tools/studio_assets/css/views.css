@@ -809,10 +809,36 @@
 
 /* AI Assist Panels */
 .ai-panel { margin-top: 20px; }
+.ai-panel-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ai-panel-header h3 { font-size: .9rem; margin: 0; }
+.ai-status {
+  font-size: .72rem; color: var(--accent); padding: 2px 8px; border-radius: 99px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-subtle));
+}
 .ai-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-.ai-btn { font-size: .78rem !important; min-height: 30px !important; }
-.ai-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-.ai-result { min-height: 40px; max-height: 360px; overflow-y: auto; }
+.ai-btn {
+  font-size: .78rem !important; min-height: 30px !important;
+  transition: all .2s;
+}
+.ai-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 12%, var(--surface-subtle)); border-color: var(--accent); }
+.ai-btn.active { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
+.ai-btn:disabled { opacity: .6; cursor: wait; }
+.ai-input { margin-top: 10px; width: 100%; }
+.ai-result-wrap {
+  margin-top: 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  background: var(--surface-subtle); overflow: hidden;
+}
+.ai-result-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px; border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-subtle));
+}
+.ai-result-label { font-size: .75rem; color: var(--text-secondary); font-weight: 500; }
+.ai-result {
+  min-height: 40px; max-height: 400px; overflow-y: auto;
+  border: none !important; border-radius: 0 !important; margin: 0 !important;
+  font-size: .8rem; line-height: 1.6; padding: 10px 12px;
+}
 
 /* ── Chat container ── */
 .chat-log { position: relative; }

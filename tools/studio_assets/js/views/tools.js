@@ -658,7 +658,9 @@ function _addSaveButton(container, resultType, data, title) {
   });
 
 
-/* ═══ AI Assistants (Story/Character/World) ═══ */
+/* ═══ AI Assistants (Story/Character/World) — v2: 事件委托 + 防抖重建 ═══ */
+let _aiCurrentView = null; // track active AI panel view to avoid unnecessary rebuilds
+
 export function initAIAssistants() {
   const configs = {
     story: {
@@ -693,116 +695,124 @@ export function initAIAssistants() {
     }
   };
 
-  // Inject once — single AI panel in editor-view, content changes per view
   const editorView = $("#editor-view");
   if (!editorView) return;
 
-  // Create AI panel
+  // ── Create AI panel once ──
   const panel = document.createElement("div");
   panel.id = "ai-assist-panel";
   panel.className = "ai-panel";
   panel.hidden = true;
   panel.innerHTML = `
-    <h3 id="ai-panel-title" style="font-size:.9rem;margin:0 0 8px">🤖 AI 辅助</h3>
-    <div class="ai-actions" id="ai-panel-buttons"></div>
-    <pre class="ai-result context-preview" id="ai-panel-result" hidden></pre>
-    <input id="ai-panel-input" class="engine-input" placeholder="输入你的想法或已有内容，AI 将基于此生成…" style="width:100%;margin-top:8px">`;
+    <div class="ai-panel-header">
+      <h3 id="ai-panel-title">🤖 AI 辅助</h3>
+      <span id="ai-panel-status" class="ai-status" hidden></span>
+    </div>
+    <div id="ai-panel-buttons" class="ai-actions"></div>
+    <input id="ai-panel-input" class="engine-input ai-input" placeholder="输入你的想法或已有内容，AI 将基于此生成…">
+    <div id="ai-panel-result-wrap" class="ai-result-wrap" hidden>
+      <div class="ai-result-header">
+        <span class="ai-result-label">✨ 生成结果</span>
+        <button id="ai-result-clear" class="quiet-button" style="font-size:.7rem;padding:2px 8px">✕ 清除</button>
+      </div>
+      <pre id="ai-panel-result" class="ai-result context-preview"></pre>
+    </div>`;
 
-  // Insert after editor toolbar
   const toolbar = editorView.querySelector(".editor-toolbar");
-  if (toolbar) {
-    toolbar.after(panel);
-  } else {
-    editorView.prepend(panel);
-  }
+  if (toolbar) toolbar.after(panel);
+  else editorView.prepend(panel);
 
-  // Watch for view changes and update AI panel
-  observeNavChanges(configs);
+  // ── Event delegation: single click handler for all AI buttons ──
+  $("#ai-panel-buttons").addEventListener("click", async (e) => {
+    const btn = e.target.closest(".ai-btn");
+    if (!btn || btn.disabled) return;
 
-  // Also bind to keyboard/click events - re-check on editor-view visibility changes
-  const observer = new MutationObserver(() => {
+    const input = $("#ai-panel-input")?.value || "";
+    const resultWrap = $("#ai-panel-result-wrap");
+    const result = $("#ai-panel-result");
+    const status = $("#ai-panel-status");
+    const action = btn.dataset.aiAction;
+    const api = btn.dataset.aiApi;
+
+    // Disable all buttons during request
+    $$("#ai-panel-buttons .ai-btn").forEach(b => { b.disabled = true; b.classList.add("active"); });
+    btn.classList.add("active");
+    if (status) { status.hidden = false; status.textContent = "⏳ 生成中…"; }
+    if (resultWrap) resultWrap.hidden = true;
+
+    try {
+      const res = await fetch(api, {
+        method: "POST", headers: {"Content-Type":"application/json","X-Randen-Studio":"1"},
+        body: JSON.stringify({ action, content: input })
+      });
+      const data = await res.json();
+
+      if (result && resultWrap) {
+        result.textContent = data.result || data.error || "无结果";
+        result.style.color = data.ai === false ? "var(--text-tertiary)" : "";
+        resultWrap.hidden = false;
+        resultWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+      if (status) status.textContent = data.ai === false ? "📝 本地模板" : "✅ 完成";
+    } catch(e) {
+      if (result && resultWrap) {
+        result.textContent = "❌ 请求失败: " + (e.message||e);
+        result.style.color = "#ef4444";
+        resultWrap.hidden = false;
+      }
+      if (status) status.textContent = "⚠ 失败";
+    }
+
+    // Re-enable buttons
+    $$("#ai-panel-buttons .ai-btn").forEach(b => { b.disabled = false; b.classList.remove("active"); });
+    setTimeout(() => { if (status) status.hidden = true; }, 3000);
+  });
+
+  // ── Clear result button ──
+  $("#ai-result-clear")?.addEventListener("click", () => {
+    const wrap = $("#ai-panel-result-wrap");
+    if (wrap) wrap.hidden = true;
+  });
+
+  // ── Smart view watcher: only rebuild buttons when view actually changes ──
+  const checkAndUpdate = () => {
     if (editorView.hidden) {
+      if (panel.hidden) return;
       panel.hidden = true;
+      _aiCurrentView = null;
       return;
     }
-    // Determine active view from sidebar active nav item
     const activeNav = document.querySelector(".nav-item.active");
     const activeView = activeNav?.dataset?.view;
-    if (activeView && configs[activeView]) {
-      updateAIPanel(panel, configs[activeView]);
-    } else {
+    if (!activeView || !configs[activeView]) {
       panel.hidden = true;
+      _aiCurrentView = null;
+      return;
     }
-  });
-  observer.observe(editorView, { attributes: true, attributeFilter: ["hidden"] });
+    // Only rebuild if view changed
+    if (_aiCurrentView === activeView) return;
+    _aiCurrentView = activeView;
+    buildAIPanel(panel, configs[activeView]);
+  };
 
-  // Initial state
-  if (!editorView.hidden) {
-    const activeNav = document.querySelector(".nav-item.active");
-    const activeView = activeNav?.dataset?.view;
-    if (activeView && configs[activeView]) {
-      updateAIPanel(panel, configs[activeView]);
-    }
-  }
-}
+  // Observe editor visibility
+  new MutationObserver(checkAndUpdate).observe(editorView, { attributes: true, attributeFilter: ["hidden"] });
 
-function observeNavChanges(configs) {
-  // Observe sidebar nav for active changes
+  // Observe nav active state
   const nav = document.querySelector(".sidebar-nav");
-  if (!nav) return;
-  const editorView = $("#editor-view");
-  const panel = $("#ai-assist-panel");
-  if (!editorView || !panel) return;
+  if (nav) new MutationObserver(checkAndUpdate).observe(nav, { attributes: true, subtree: true, attributeFilter: ["class"] });
 
-  const observer = new MutationObserver(() => {
-    if (editorView.hidden) {
-      panel.hidden = true;
-      return;
-    }
-    const activeNav = document.querySelector(".nav-item.active");
-    const activeView = activeNav?.dataset?.view;
-    if (activeView && configs[activeView]) {
-      updateAIPanel(panel, configs[activeView]);
-    } else {
-      panel.hidden = true;
-    }
-  });
-  observer.observe(nav, { attributes: true, subtree: true, attributeFilter: ["class"] });
+  // Initial check
+  checkAndUpdate();
 }
 
-function updateAIPanel(panel, config) {
+function buildAIPanel(panel, config) {
   panel.hidden = false;
   $("#ai-panel-title").textContent = `🤖 ${config.label}`;
-  const btnContainer = $("#ai-panel-buttons");
-  if (btnContainer) {
-    btnContainer.innerHTML = config.actions.map(a =>
-      `<button class="quiet-button ai-btn" data-ai-action="${a.action}" data-ai-api="${config.api}">${a.label}</button>`
-    ).join('');
-    // Re-bind buttons
-    btnContainer.querySelectorAll(".ai-btn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const input = $("#ai-panel-input")?.value || "";
-        const result = $("#ai-panel-result");
-        const action = btn.dataset.aiAction;
-        const api = btn.dataset.aiApi;
-        btn.classList.add("active");
-        if (result) { result.hidden = false; result.textContent = "🤖 AI 生成中…"; }
-        try {
-          const res = await fetch(api, {
-            method: "POST", headers: {"Content-Type":"application/json","X-Randen-Studio":"1"},
-            body: JSON.stringify({ action, content: input })
-          });
-          const data = await res.json();
-          if (result) {
-            result.textContent = data.result || data.error || "无结果";
-            if (data.ai === false) result.style.color = "var(--text-tertiary)";
-            else result.style.color = "";
-          }
-        } catch(e) {
-          if (result) result.textContent = "请求失败: " + (e.message||e);
-        }
-        btn.classList.remove("active");
-      });
-    });
-  }
+  $("#ai-panel-buttons").innerHTML = config.actions.map(a =>
+    `<button class="quiet-button ai-btn" data-ai-action="${a.action}" data-ai-api="${config.api}">${a.label}</button>`
+  ).join('');
+  // Clear previous result
+  const wrap = $("#ai-panel-result-wrap");
+  if (wrap) wrap.hidden = true;
 }
