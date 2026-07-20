@@ -131,4 +131,4 @@ def test_workspace_snapshot_surfaces_novel_readiness(tmp_path: Path):
         "outline": True,
         "creative_focus": True,
     }
-    assert snapshot.next_actions[0] == "openwrite dante"
+    assert snapshot.next_actions[0] == "randen dante"

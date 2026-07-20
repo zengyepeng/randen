@@ -79,7 +79,7 @@ def test_build_prompt_session_falls_back_without_prompt_toolkit(
 
 
 def test_main_rejects_legacy_wizard_command(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setattr(sys, "argv", ["openwrite", "wizard"])
+    monkeypatch.setattr(sys, "argv", ["randen", "wizard"])
 
     with pytest.raises(SystemExit) as exc:
         cli_module.main()
@@ -135,7 +135,7 @@ def test_cmd_dante_no_longer_uses_orchestrator_bridge(
 
 
 def test_dante_help_no_longer_mentions_placeholder(monkeypatch: pytest.MonkeyPatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["openwrite", "dante", "--help"])
+    monkeypatch.setattr(sys, "argv", ["randen", "dante", "--help"])
 
     with pytest.raises(SystemExit) as exc:
         cli_module.main()
@@ -193,7 +193,7 @@ def test_cmd_agent_is_retired_and_tells_users_to_use_dante(
 
 
 def test_agent_help_only_reports_retired_status(monkeypatch: pytest.MonkeyPatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["openwrite", "agent", "--help"])
+    monkeypatch.setattr(sys, "argv", ["randen", "agent", "--help"])
 
     with pytest.raises(SystemExit) as exc:
         cli_module.main()

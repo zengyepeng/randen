@@ -89,7 +89,7 @@ def test_main_status_command_uses_current_project_root(
     (manuscript_dir / "ch_001_draft.md").write_text("# 第一章草稿\n\n草稿", encoding="utf-8")
 
     monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
-    monkeypatch.setattr(sys, "argv", ["openwrite", "status"])
+    monkeypatch.setattr(sys, "argv", ["randen", "status"])
 
     info_messages: list[str] = []
     monkeypatch.setattr(cli_module.logger, "info", info_messages.append)
