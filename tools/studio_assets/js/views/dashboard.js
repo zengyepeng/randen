@@ -75,7 +75,6 @@ export function renderWorkspace() {
 
   renderDocumentList(state.view === "dashboard" ? "chapters" : state.view);
   renderOperations();
-  renderOnboarding(snapshot.readiness);
 }
 
 function renderReadiness(readiness) {

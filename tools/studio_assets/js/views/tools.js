@@ -22,7 +22,7 @@ export function initCreationWizard() {
     setTimeout(() => {
       const dlg = $("#engine-dialog");
       if (dlg && !dlg.open) { dlg.showModal(); goStep(1); }
-    }, 800);
+    }, 200);
   }
 
   $("#engine-launch")?.addEventListener("click", () => {
