@@ -100,6 +100,7 @@ export function initCreationWizard() {
     } catch (e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
+  loadFAQIntoWizard();
 }
 
 /* ── 文件上传 ── */
@@ -156,6 +157,7 @@ function _readFile(file, textarea, dropzone) {
 }
 
 function _showDissectResult(out, data) {
+  _addExportButtons(out, data, data.title);
   const hooks = (data.hooks_detected||[]).map(x => `<span class="ew-chip">${_esc(x)}</span>`).join('');
   const gfs = (data.golden_finger_style||[]).map(x => `<span class="ew-chip">${_esc(x)}</span>`).join('');
   let chapterHtml = "";
@@ -233,7 +235,8 @@ function _initMergeButton() {
   <p>🎵 主导节奏: ${_esc(data.dominant_rhythm)} (${_esc(data.rhythm_breakdown)})</p>
   <p class="ew-tip">${_esc(data.suggestion)}</p>
 </div>${_diffSection(data.differences)}`;
-    } catch (e) { if (out) _ewErr(out, e); }
+        _addExportButtons(out, data, '融合分析');
+  } catch (e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
 }
@@ -256,4 +259,62 @@ async function _ewPost(url, body) {
   const res = await fetch(url, { method: "POST", headers: {"Content-Type":"application/json","X-Randen-Studio":"1"}, body: JSON.stringify(body) });
   if (!res.ok) { const err = await res.json().catch(()=>({detail:res.statusText})); throw new Error(err.error||err.detail||`请求失败 (${res.status})`); }
   return res.json();
+}
+
+/* ── Export helpers ── */
+function _diffSection(diffs) {
+  if (!diffs?.length) return "";
+  return `<hr style="margin:12px 0;border:none;border-top:1px solid var(--border-subtle)">
+<h4 style="font-size:.85rem">🔍 各书差异与定位</h4>
+${diffs.map(d => `
+<div style="margin-bottom:8px;padding:8px;border-radius:6px;background:var(--surface-subtle)">
+  <strong>📖 ${_esc(d.title)}</strong>
+  <p style="margin:2px 0;font-size:.8rem;color:var(--text-secondary)">
+    ${d.unique_hooks?.length ? '独特钩子: '+d.unique_hooks.map(_esc).join('、') : ''}
+    ${d.unique_golden_fingers?.length ? ' | 独特金手指: '+d.unique_golden_fingers.map(_esc).join('、') : ''}
+    ${!d.unique_hooks?.length && !d.unique_golden_fingers?.length ? '与其它书高度相似' : ''}
+  </p>
+  <p style="margin:0;font-size:.78rem;color:var(--text-tertiary)">🎯 目标读者: ${_esc(d.target)}</p>
+</div>`).join('')}`;
+}
+
+function _addExportButtons(container, resultData, label) {
+  if (!container) return;
+  const bar = document.createElement("div");
+  bar.className = "ew-export-bar";
+  const copyBtn = document.createElement("button");
+  copyBtn.className = "ew-run"; copyBtn.textContent = "📋 复制";
+  copyBtn.style.cssText = "font-size:.75rem;padding:4px 10px;margin:4px 4px 0 0";
+  copyBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(JSON.stringify(resultData, null, 2));
+    copyBtn.textContent = "✅ 已复制";
+    setTimeout(() => { copyBtn.textContent = "📋 复制"; }, 1500);
+  });
+  bar.append(copyBtn);
+  container.prepend(bar);
+}
+
+
+async function loadFAQIntoWizard() {
+  const root = $("#ew-faq-list");
+  if (!root) return;
+  try {
+    const data = await _ewPost("/api/faq", {});
+    root.innerHTML = "";
+    Object.entries(data.faq).forEach(([cat, items]) => {
+      const dt = document.createElement("details");
+      dt.style.cssText = "margin-bottom:6px";
+      const sum = document.createElement("summary");
+      sum.textContent = cat;
+      sum.style.cssText = "font-weight:600;font-size:.84rem;cursor:pointer;padding:4px 0";
+      dt.append(sum);
+      items.forEach(i => {
+        const p = document.createElement("p");
+        p.style.cssText = "font-size:.8rem;color:var(--text-secondary);margin:2px 0 8px 12px;line-height:1.5";
+        p.innerHTML = `<strong>Q: ${_esc(i.q)}</strong><br>A: ${_esc(i.a)}`;
+        dt.append(p);
+      });
+      root.append(dt);
+    });
+  } catch (_) { root.innerHTML = "<small>加载失败</small>"; }
 }
