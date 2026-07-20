@@ -97,6 +97,13 @@ def _make_console():
     return None
 
 
+def _rich_print(console):
+    """适配 Rich console.print，忽略不支持的 style 参数"""
+    def _print(text, style=None, **kwargs):
+        return console.print(text)
+    return _print
+
+
 def _show_banner(console):
     banner = (
         "[bold cyan]"
@@ -192,7 +199,7 @@ def run_setup_wizard() -> int:
     console = _make_console()
 
     _show_banner(console)
-    _print = console.print if console else _plain_print
+    _print = _rich_print(console) if console else _plain_print
 
     existing = load_config()
     if existing:
