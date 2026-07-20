@@ -135,12 +135,35 @@
             </div>
             <div class="editor-actions">
               <span id="editor-word-count">0 字</span>
+              <button id="write-chapter-btn" class="primary-button" type="button" style="background:var(--accent);font-size:.8rem" title="一键写下一章">✍️ 写下一章</button>
+              <button id="reader-mode-btn" class="quiet-button" type="button">📖 阅读</button>
               <button id="reload-document" class="quiet-button" type="button">重新载入</button>
               <button id="review-document" class="quiet-button" type="button" hidden>审稿</button>
+              <span id="token-info" class="token-info" hidden>💰 0</span>
               <button id="save-document" class="primary-button" type="button" disabled>保存</button>
             </div>
           </div>
+          <!-- Inline write form -->
+          <div id="write-inline" class="write-inline" hidden>
+            <div class="write-inline-row">
+              <label>目标字数 <input id="write-inline-words" type="number" min="200" max="12000" value="3000" style="width:80px"></label>
+              <label style="flex:1">写作指导 <input id="write-inline-guidance" placeholder="选填，如：本章要有打斗场景…"></label>
+              <button id="write-inline-start" class="primary-button" type="button">开始写作</button>
+              <button id="write-inline-cancel" class="quiet-button" type="button">取消</button>
+            </div>
+            <p id="write-inline-status" class="write-progress" role="status"></p>
+          </div>
           <textarea id="document-editor" class="document-editor" spellcheck="false" aria-label="Markdown 文档正文"></textarea>
+          <!-- Chapter reader -->
+          <div id="chapter-reader" class="chapter-reader" hidden>
+            <div id="chapter-reader-content" class="chapter-reader-content"></div>
+            <div class="chapter-reader-nav">
+              <button id="reader-prev" class="quiet-button">← 上一章</button>
+              <span id="reader-chapter-label"></span>
+              <button id="reader-next" class="quiet-button">下一章 →</button>
+              <button id="reader-exit" class="primary-button">退出阅读</button>
+            </div>
+          </div>
         </section>
 
         <section id="agents-view" class="workspace-view" hidden aria-labelledby="agents-title">

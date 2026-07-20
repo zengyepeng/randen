@@ -6,7 +6,7 @@ import { loadWorkspace as loadWorkspaceAPI } from "./api.js";
 import { switchView, openDocument, routeFromLocation } from "./router.js";
 import { renderWorkspace } from "./views/dashboard.js";
 import { initCreationWizard, initAIAssistants } from "./views/tools.js";
-import { updateEditorCount } from "./views/editor.js";
+import { updateEditorCount, initEditorAutosave, initWritePipeline, initChapterReader, initTokenDisplay } from "./views/editor.js";
 import { chooseAgent, appendChatMessage, handleChatSubmit, initPrototypeButton, initQuickStartChips, initClearButton, initScrollButton, initChatKeyboard, initPersonaSelector, initImageInspire, initExportButton, initApplyToProject, initNewConvButton } from "./views/agents.js";
 import { renderContinuity } from "./views/continuity.js";
 import { renderEmotionDashboard } from "./views/emotion.js";
@@ -79,6 +79,10 @@ function bindEvents() {
       updateEditorCount();
     });
   }
+  initEditorAutosave();
+  initWritePipeline();
+  initChapterReader();
+  initTokenDisplay();
   const saveBtn = $("#save-document");
   if (saveBtn) saveBtn.addEventListener("click", saveDocument);
   const reviewBtn = $("#review-document");

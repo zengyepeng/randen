@@ -858,6 +858,40 @@
   border-color: var(--accent); outline: none;
 }
 
+/* ── Write inline form ── */
+.write-inline {
+  padding: 10px 14px; margin: 8px 0; border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-subtle));
+  border: 1px solid var(--border-subtle);
+}
+.write-inline-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+.write-inline-row label { font-size: .75rem; color: var(--text-secondary); }
+.write-inline-row input { font-size: .82rem; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-subtle); background: var(--surface); color: var(--text); }
+
+/* ── Chapter reader ── */
+.chapter-reader { max-height: calc(100vh - 200px); overflow-y: auto; }
+.chapter-reader-content {
+  padding: 20px 24px; line-height: 2; font-size: .9rem;
+  max-width: 720px; margin: 0 auto;
+}
+.chapter-reader-content h1 { font-size: 1.3rem; margin-bottom: 16px; }
+.chapter-reader-content h2 { font-size: 1.1rem; margin: 16px 0 8px; }
+.chapter-reader-content h3 { font-size: 1rem; margin: 12px 0 6px; }
+.chapter-reader-content p { margin-bottom: 12px; text-indent: 2em; }
+.chapter-reader-content strong { font-weight: 700; }
+.chapter-reader-nav {
+  display: flex; gap: 8px; align-items: center; justify-content: center;
+  padding: 12px; border-top: 1px solid var(--border-subtle);
+  position: sticky; bottom: 0; background: var(--surface);
+}
+
+/* ── Token info ── */
+.token-info {
+  font-size: .7rem; color: var(--text-tertiary);
+  padding: 2px 8px; border-radius: 99px;
+  background: var(--surface-subtle);
+}
+
 /* ── Chat container ── */
 .chat-log { position: relative; }
 
