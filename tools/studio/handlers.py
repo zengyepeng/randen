@@ -614,7 +614,7 @@ def handle_inspire_apply(app, params: dict[str, Any]) -> dict[str, Any]:
     app.require_project()
     prototype = str(params.get("prototype") or "")
     if not prototype.strip():
-        raise RuntimeError("请先生成作品雏形")
+        raise StudioError("请先生成作品雏形", HTTPStatus.BAD_REQUEST)
 
     created = {"characters": 0, "world": 0, "outline": False, "materials": 0}
 
@@ -737,13 +737,13 @@ def handle_inspire_vision(app, params: dict[str, Any]) -> dict[str, Any]:
     """分析上传的图片，生成灵感种子描述。"""
     import base64
     if not os.environ.get("LLM_API_KEY", "").strip():
-        raise RuntimeError("未配置 LLM_API_KEY，无法使用图片分析功能")
+        raise StudioError("未配置 LLM_API_KEY，无法使用图片分析功能", HTTPStatus.PRECONDITION_FAILED)
 
     image_data = str(params.get("image") or "")
     persona = str(params.get("persona") or "warm")
 
     if not image_data:
-        raise RuntimeError("请上传图片")
+        raise StudioError("请上传图片", HTTPStatus.BAD_REQUEST)
 
     # Strip data:image prefix if present
     if "," in image_data and image_data.startswith("data:"):
@@ -805,4 +805,4 @@ def handle_inspire_vision(app, params: dict[str, Any]) -> dict[str, Any]:
     except ImportError:
         return {"description": "🖼️ 图片已接收！这是一个很好的创作起点。试着描述一下这张图片中的场景——发生了什么？谁在那里？为什么这一刻如此特别？", "question": "从这张图出发，你想讲一个什么样的故事？"}
     except Exception as e:
-        raise RuntimeError(f"图片分析失败: {str(e)}")
+        raise StudioError(f"图片分析失败: {str(e)}", HTTPStatus.BAD_GATEWAY)
