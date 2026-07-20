@@ -717,10 +717,6 @@ export function initAIAssistants() {
   }
 
   // Watch for view changes and update AI panel
-  const { router } = await import("../router.js");
-  const origSwitchView = router?.switchView;
-
-  // Hook into navigation changes via MutationObserver on nav items
   observeNavChanges(configs);
 
   // Also bind to keyboard/click events - re-check on editor-view visibility changes
