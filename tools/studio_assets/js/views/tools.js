@@ -292,8 +292,29 @@ function _initFileUpload() {
   });
 }
 
+
 function _readFile(file, textarea, dropzone) {
+  if (file.name.endsWith('.epub')) {
+    // EPUB: send raw bytes to backend for extraction
+    if (dropzone) dropzone.querySelector("span").textContent = "⏳ 解析 EPUB…";
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const data = await _ewPost("/api/epub", { text: reader.result });
+        if (data.ok && textarea) {
+          textarea.value = data.text;
+          if (dropzone) dropzone.querySelector("span").textContent = `📖 ${data.title} (${data.char_count}字, ${data.paragraphs}段) 已解析`;
+        } else if (data.error) {
+          alert(data.error);
+          if (dropzone) dropzone.querySelector("span").textContent = "📂 拖拽 .txt/.md/.epub 文件到此处，或点击选择";
+        }
+      } catch(e) { alert("EPUB 解析失败: " + (e.message||e)); }
+    };
+    reader.readAsBinaryString(file);
+    return;
+  }
   if (!file.name.endsWith(".txt") && !file.name.endsWith(".md")) {
+
     alert("仅支持 .txt 和 .md 文件");
     return;
   }

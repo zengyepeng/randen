@@ -156,6 +156,49 @@ GENRE_GUIDES = {
             "✅ 展示建造成果的视觉化对比（前后变化）",
         ],
     },
+    "女频甜宠": {
+        "key_question": "男女主的关系发展有什么独特的看点？HE是必然的，但'怎么走到HE'才是卖点。",
+        "golden_finger_examples": [
+            "情感系统（能看到好感度数值，但数值有时不准导致误会）",
+            "重生先知（知道谁是渣男/真爱，但蝴蝶效应让感情线偏移）",
+            "替身觉醒（穿成虐文女主，拒绝走原著路线）",
+        ],
+        "pitfalls": [
+            "❌ 男主太完美无缺点 → 像纸片人",
+            "❌ 感情进展太快没有阻力 → 读者不着急",
+            "✅ 男主要有至少一个让读者想骂他的缺点",
+            "✅ 甜宠不等于没有冲突——误会、身份差距、外部阻力",
+        ],
+    },
+    "玄幻修仙": {
+        "key_question": "主角的修炼体系有什么独特之处？为什么别人做不到？",
+        "golden_finger_examples": [
+            "废柴体质觉醒（看似最差的资质，其实是万古第一奇才）",
+            "随身老爷爷（戒指里的强者指导，但要付出代价）",
+            "吞噬系统（猎杀获取能力，但数量有限且越来越难）",
+            "签到诸天（每天在不同地点签到获得功法/丹药）",
+        ],
+        "pitfalls": [
+            "❌ 升级太快没有瓶颈 → 30万字后无内容可写",
+            "❌ 每个境界都一个套路 → 换地图换皮不换骨",
+            "✅ 每跨越一个大境界伴随世界观扩张",
+            "✅ 用'资源稀缺'制造冲突——所有人都想要主角手中的东西",
+        ],
+    },
+    "悬疑推理": {
+        "key_question": "核心谜题是什么？读者能在第几章猜到真相？",
+        "golden_finger_examples": [
+            "记忆回溯（能短暂回到案发现场，但每次使用折寿）",
+            "灵异直觉（能感知到谎言，但分不清是自己多疑还是真的）",
+            "系统推演（犯罪心理画像系统，但信息越少越不准）",
+        ],
+        "pitfalls": [
+            "❌ 谜底太早暴露 → 读者没了追读动力",
+            "❌ 谜底太晚揭示 → 读者忘了前面的线索",
+            "✅ 每3-5章释放一个小线索，每10章给一个假答案再推翻",
+            "✅ 让读者觉得'我差一点就猜到了'——是最佳体验",
+        ],
+    },
     "规则怪谈": {
         "key_question": "核心规则是什么？违反规则的后果是什么？",
         "golden_finger_examples": [
@@ -837,7 +880,40 @@ def _gen_first_chapter_hook(premise: str, first_arc: dict) -> str:
 
 # ── 5: EPUB 支持 ──────────────────────────────────────────────
 
-def extract_text_from_epub(filepath: str) -> dict:
+def extract_text_from_epub(content_or_path: str, is_bytes: bool = False) -> dict:
+    """从 EPUB 文件或二进制内容提取纯文本"""
+    if is_bytes:
+        # Binary content from file upload
+        try:
+            from zipfile import ZipFile
+            import io
+            zf = ZipFile(io.BytesIO(content_or_path.encode('latin-1') if isinstance(content_or_path, str) else content_or_path))
+            return _parse_epub_zip(zf)
+        except Exception as e:
+            return {"error": f"EPUB 解析失败: {str(e)[:100]}"}
+
+    # Filepath mode (fallback)
+
+def _parse_epub_zip(zf) -> dict:
+    """通用 EPUB zip 解析"""
+    import re
+    text_parts = []
+    for name in zf.namelist():
+        if name.endswith(('.xhtml', '.html', '.htm', '.xml')):
+            with zf.open(name) as f:
+                content = f.read().decode('utf-8', errors='ignore')
+                cleaned = re.sub(r'<[^>]+>', '\n', content)
+                cleaned = re.sub(r'\n{3,}', '\n\n', cleaned).strip()
+                if cleaned:
+                    text_parts.append(cleaned)
+    full_text = '\n\n'.join(text_parts)
+    return {
+        "ok": True,
+        "text": full_text,
+        "char_count": len(full_text),
+        "paragraphs": len(text_parts),
+    }
+
     """从 EPUB 文件提取纯文本"""
     from pathlib import Path
     path = Path(filepath)
