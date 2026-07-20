@@ -279,7 +279,7 @@ def run_setup_wizard() -> int:
         api_key = getpass.getpass("  API Key: ").strip()
 
     if not api_key:
-        _print("[yellow]⚠ Key 为空，后续将无法调用 AI。可用 openwrite setup 重新配置。[/]", style="warn")
+        _print("[yellow]⚠ Key 为空，后续将无法调用 AI。可用 randen setup 重新配置。[/]", style="warn")
 
     # ── 步骤 3: base_url ───────────────────────────
     _print(
@@ -360,7 +360,7 @@ def run_setup_wizard() -> int:
             if not success and Prompt is not None:
                 retry = Confirm.ask("  是否重试或修改配置？", default=True)
                 if retry:
-                    _print("[yellow]请重新运行 openwrite setup[/]", style="warn")
+                    _print("[yellow]请重新运行 randen setup[/]", style="warn")
                     return 1
     else:
         _print("[yellow]⚠ 跳过连接测试（API Key 为空）[/]", style="warn")
@@ -389,7 +389,7 @@ def run_setup_wizard() -> int:
     )
 
     _print(
-        "[bold cyan]🎉 现在可以创建你的第一本书了！运行: openwrite init[/]" if console else "\n🎉 现在可以创建你的第一本书了！运行 openwrite init",
+        "[bold cyan]🎉 现在可以创建你的第一本书了！运行: randen init[/]" if console else "\n🎉 现在可以创建你的第一本书了！运行 randen init",
         style="info",
     )
 

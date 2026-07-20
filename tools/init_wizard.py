@@ -39,18 +39,18 @@ GENRES = [
 NEXT_STEPS = """[bold cyan]下一步你可以：[/]
 
   [white]1. 打开大纲，规划故事骨架[/]
-     $ openwrite goethe       # 和策划编辑聊天定大纲
+     $ randen goethe       # 和策划编辑聊天定大纲
      $ vim src/outline.md     # 或者直接写大纲
 
   [white]2. 创建核心角色[/]
-     $ openwrite goethe       # 让 AI 帮你生成人设
+     $ randen goethe       # 让 AI 帮你生成人设
 
   [white]3. 写第一章！[/]  ← [bold yellow]从这里开始[/]
-     [green]$ openwrite write next[/]
+     [green]$ randen write next[/]
 
   [white]4. 查看项目状态[/]
-     $ openwrite desk         # 小说工作台
-     $ openwrite status       # 进度概览"""
+     $ randen desk         # 小说工作台
+     $ randen status       # 进度概览"""
 
 
 def _make_console():
@@ -177,10 +177,10 @@ class InitWizard:
                     else f"  继续使用已有项目: {existing_id}"
                 )
                 self.print(
-                    "[bold cyan]提示: 输入 openwrite desk 查看项目状态；"
-                    "openwrite write next 写第一章！[/]"
+                    "[bold cyan]提示: 输入 randen desk 查看项目状态；"
+                    "randen write next 写第一章！[/]"
                     if self.console
-                    else "\n  提示: openwrite write next 写第一章！"
+                    else "\n  提示: randen write next 写第一章！"
                 )
                 return False
 
@@ -300,9 +300,9 @@ class InitWizard:
                 run_setup_wizard()
             else:
                 self.print(
-                    "[yellow]之后可以随时运行 openwrite setup 来配置。[/]"
+                    "[yellow]之后可以随时运行 randen setup 来配置。[/]"
                     if self.console
-                    else "  之后运行 openwrite setup 来配置。"
+                    else "  之后运行 randen setup 来配置。"
                 )
 
     def _safe_novel_id(self, title: str) -> str:
@@ -448,7 +448,7 @@ class InitWizard:
             )
             self.console.print(
                 Syntax(
-                    "openwrite write next",
+                    "randen write next",
                     "bash",
                     theme="monokai",
                     padding=1,
@@ -477,11 +477,11 @@ class InitWizard:
             print("      └── manuscript/")
             print()
             print("  下一步：")
-            print("    1. openwrite write next    ← 写第一章！")
-            print("    2. openwrite goethe        ← 和策划编辑聊天")
-            print("    3. openwrite desk          ← 小说工作台")
+            print("    1. randen write next    ← 写第一章！")
+            print("    2. randen goethe        ← 和策划编辑聊天")
+            print("    3. randen desk          ← 小说工作台")
             print()
-            print("  准备好了！输入 openwrite write next 写第一章 🎉")
+            print("  准备好了！输入 randen write next 写第一章 🎉")
 
 
 def main():

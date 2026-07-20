@@ -435,7 +435,7 @@ def run_dante() -> int:
     project_root = Path.cwd()
     config_path = project_root / "novel_config.yaml"
     if not config_path.exists():
-        print("未找到 novel_config.yaml，请先运行 openwrite init")
+        print("未找到 novel_config.yaml，请先运行 randen init")
         return 1
 
     import yaml

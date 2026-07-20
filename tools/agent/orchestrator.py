@@ -1,4 +1,4 @@
-"""Deterministic book-level orchestrator for ``openwrite agent``."""
+"""Deterministic book-level orchestrator for ``randen agent``."""
 
 from __future__ import annotations
 

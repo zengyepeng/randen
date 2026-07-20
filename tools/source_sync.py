@@ -101,6 +101,6 @@ def ensure_runtime_fresh(project_root: Path, novel_id: str) -> Dict[str, Any]:
     after = collect_sync_status(project_root, novel_id)
     if after["needs_sync"]:
         raise RuntimeError(
-            "检测到未同步或格式异常的源文件，请先运行 `openwrite sync --check` 排查后再继续。"
+            "检测到未同步或格式异常的源文件，请先运行 `randen sync --check` 排查后再继续。"
         )
     return {**after, "auto_synced": True}

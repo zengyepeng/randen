@@ -453,11 +453,11 @@ def _pending_foreshadowing_count(path: Path) -> int:
 
 def _next_actions(readiness: dict[str, bool], has_chapters: bool) -> list[str]:
     if not readiness["author_intent"] or not readiness["background"]:
-        return ["openwrite goethe", "先把核心承诺、背景和主角冲突聊清楚"]
+        return ["randen goethe", "先把核心承诺、背景和主角冲突聊清楚"]
     if not readiness["characters"] or not readiness["outline"]:
-        return ["openwrite goethe", "补齐主要人物与当前可写范围大纲"]
+        return ["randen goethe", "补齐主要人物与当前可写范围大纲"]
     if not readiness["creative_focus"]:
-        return ["openwrite focus set \"本阶段目标\"", "设定近期创作罗盘"]
+        return ["randen focus set \"本阶段目标\"", "设定近期创作罗盘"]
     if has_chapters:
-        return ["openwrite dante", "继续下一章，写完后审查并结算状态"]
-    return ["openwrite dante", "从第一章开始进入写作—审查—结算闭环"]
+        return ["randen dante", "继续下一章，写完后审查并结算状态"]
+    return ["randen dante", "从第一章开始进入写作—审查—结算闭环"]
