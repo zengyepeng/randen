@@ -144,39 +144,78 @@
         </section>
 
         <section id="agents-view" class="workspace-view" hidden aria-labelledby="agents-title">
-          <div class="section-title-row workspace-view-header">
-            <div>
-              <p class="eyebrow">AI COLLABORATION</p>
-              <h1 id="agents-title">AI 协作</h1>
-              <p class="section-description">💡 灵感对话：说出想法 → 多轮追问 → 生成雏形。Goethe 整理可写资产，Dante 持续推进正文。</p>
-            </div>
-            <div class="segmented" role="group" aria-label="选择协作模式">
-              <button class="segment active" type="button" data-agent="inspire">💡 灵感对话</button>
-              <button class="segment" type="button" data-agent="goethe">Goethe · 规划</button>
-              <button class="segment" type="button" data-agent="dante">Dante · 正文</button>
+          <div class="workspace-view-header" style="display:flex; gap:0; align-items:flex-start;">
+            <!-- Conversation sidebar -->
+            <aside id="conv-sidebar" class="conv-sidebar">
+              <div class="conv-sidebar-header">
+                <h3>💬 对话记录</h3>
+                <button id="conv-new" class="quiet-button" style="font-size:.75rem;padding:3px 10px">+ 新建</button>
+              </div>
+              <div id="conv-list" class="conv-list"></div>
+              <div class="conv-sidebar-footer">
+                <button id="chat-export" class="quiet-button" style="font-size:.72rem;width:100%">📥 导出当前对话</button>
+              </div>
+            </aside>
+            <!-- Main chat area -->
+            <div class="conv-main">
+              <div class="section-title-row">
+                <div>
+                  <p class="eyebrow">AI COLLABORATION</p>
+                  <h1 id="agents-title">AI 协作</h1>
+                  <p class="section-description">💡 灵感对话：说出想法 → 多轮追问 → 生成雏形 → 应用到项目。Goethe 整理可写资产，Dante 持续推进正文。</p>
+                </div>
+                <div class="segmented" role="group" aria-label="选择协作模式">
+                  <button class="segment active" type="button" data-agent="inspire">💡 灵感对话</button>
+                  <button class="segment" type="button" data-agent="goethe">Goethe · 规划</button>
+                  <button class="segment" type="button" data-agent="dante">Dante · 正文</button>
+                </div>
+              </div>
+              <!-- Persona selector -->
+              <div id="persona-selector" class="persona-bar">
+                <span class="persona-label">对话风格：</span>
+                <select id="persona-select" class="persona-select">
+                  <option value="warm">🔥 温暖协作</option>
+                  <option value="sharp">⚡ 毒舌编辑</option>
+                  <option value="analyst">🔬 硬核分析</option>
+                  <option value="creative">🎨 创意激荡</option>
+                  <option value="world">🌍 世界架构师</option>
+                </select>
+                <span id="persona-badge" class="persona-badge">🔥 温暖协作</span>
+              </div>
+              <!-- Image inspiration -->
+              <div id="image-inspire-area" class="image-inspire-area">
+                <div id="image-dropzone" class="image-dropzone">
+                  <span>🖼️ 拖拽或点击上传场景/角色参考图</span>
+                </div>
+                <input type="file" id="image-file-input" accept="image/*" hidden>
+              </div>
+              <div id="chat-log" class="chat-log" aria-live="polite">
+                <div id="chat-typing" class="chat-typing" hidden><span></span><span></span><span></span> 燃灯正在思考…</div>
+                <article class="chat-message assistant"><strong>燃灯</strong><p>💡 <strong>灵感对话模式</strong>：说出你的创作想法，我会追问、澄清、完善，最后生成一份作品雏形（故事背景 + 角色框架 + 世界观 + 第一章钩子）。现在，请告诉我你的灵感。</p></article>
+                <button id="chat-scroll-bottom" class="chat-scroll-bottom" hidden title="滚动到底部">↓</button>
+              </div>
+              <div id="chat-quick-replies" class="quick-replies" role="group" aria-label="快捷追问"></div>
+              <form id="chat-form" class="chat-composer">
+                <label for="chat-input">你的想法</label>
+                <textarea id="chat-input" rows="4" maxlength="12000" placeholder="说出你的创作想法…" required></textarea>
+                <div class="inspire-quickstart">
+                  <span class="quickstart-label">快速开始：</span>
+                  <button class="quiet-button qs-chip" data-prompt="我想写一个关于时间循环的小说，主角每天醒来都回到同一天，但每次循环都会少一个他在乎的人">⏰ 时间循环</button>
+                  <button class="quiet-button qs-chip" data-prompt="一个被公司裁员的程序员，穿越到了修真世界，靠写代码修仙">💻 代码修仙</button>
+                  <button class="quiet-button qs-chip" data-prompt="深夜十一点五十九分，手机收到一条规则怪谈，每次违反规则都会永久失去一种感官">👻 规则怪谈</button>
+                  <button class="quiet-button qs-chip" data-prompt="重生回到高考前，这一次我要改写所有人的人生">🔄 重生逆袭</button>
+                  <button class="quiet-button qs-chip" data-prompt="我想写一个发生在未来的故事，AI 已经取代了所有工作，人类靠'情感值'生活">🤖 AI 未来</button>
+                </div>
+                <div class="composer-actions">
+                  <button id="chat-clear" class="quiet-button chat-clear-btn" type="button" title="新建对话 (Ctrl+L)">🗑 新建</button>
+                  <button id="chat-apply" class="quiet-button chat-apply-btn" type="button" title="解析雏形并创建角色/世界观/大纲" style="display:none">🔧 应用到项目</button>
+                  <span id="chat-status" role="status"></span>
+                  <button id="chat-submit" class="primary-button" type="submit">发送灵感</button>
+                  <button id="chat-prototype" class="primary-button" type="button" hidden style="margin-left:8px">✨ 生成作品雏形</button>
+                </div>
+              </form>
             </div>
           </div>
-          <div id="chat-log" class="chat-log" aria-live="polite">
-            <div id="chat-typing" class="chat-typing" hidden><span></span><span></span><span></span> 燃灯正在思考…</div>
-            <article class="chat-message assistant"><strong>燃灯</strong><p>💡 <strong>灵感对话模式</strong>：说出你的创作想法，我会追问、澄清、完善，最后生成一份作品雏形（故事背景 + 角色框架 + 世界观 + 第一章钩子）。现在，请告诉我你的灵感。</p></article>
-          </div>
-          <form id="chat-form" class="chat-composer">
-            <label for="chat-input">你的想法</label>
-            <textarea id="chat-input" rows="4" maxlength="12000" placeholder="例如：我想写一个关于时间循环的小说，主角每天醒来都回到同一天，但每次循环都会少一个他在乎的人…" required></textarea>
-            <div class="inspire-quickstart">
-              <span class="quickstart-label">快速开始：</span>
-              <button class="quiet-button qs-chip" data-prompt="我想写一个关于时间循环的小说，主角每天醒来都回到同一天，但每次循环都会少一个他在乎的人">⏰ 时间循环</button>
-              <button class="quiet-button qs-chip" data-prompt="一个被公司裁员的程序员，穿越到了修真世界，靠写代码修仙">💻 代码修仙</button>
-              <button class="quiet-button qs-chip" data-prompt="深夜十一点五十九分，手机收到一条规则怪谈，每次违反规则都会永久失去一种感官">👻 规则怪谈</button>
-              <button class="quiet-button qs-chip" data-prompt="重生回到高考前，这一次我要改写所有人的人生">🔄 重生逆袭</button>
-              <button class="quiet-button qs-chip" data-prompt="我想写一个发生在未来的故事，AI 已经取代了所有工作，人类靠'情感值'生活">🤖 AI 未来</button>
-            </div>
-            <div class="composer-actions">
-              <span id="chat-status" role="status"></span>
-              <button id="chat-submit" class="primary-button" type="submit">发送灵感</button>
-              <button id="chat-prototype" class="primary-button" type="button" hidden style="margin-left:8px">✨ 生成作品雏形</button>
-            </div>
-          </form>
         </section>
 
         <section id="continuity-view" class="workspace-view" hidden aria-labelledby="continuity-title">

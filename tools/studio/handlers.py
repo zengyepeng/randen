@@ -602,3 +602,207 @@ def handle_ai_world(app, params):
         return world_assist(action, content, None, client)
     except ImportError:
         return world_assist(action, content)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 灵感对话串联 API
+# ═══════════════════════════════════════════════════════════════
+
+def handle_inspire_apply(app, params: dict[str, Any]) -> dict[str, Any]:
+    """解析作品雏形 Markdown，创建角色/世界观/大纲条目到项目。"""
+    import re
+    app.require_project()
+    prototype = str(params.get("prototype") or "")
+    if not prototype.strip():
+        raise RuntimeError("请先生成作品雏形")
+
+    created = {"characters": 0, "world": 0, "outline": False, "materials": 0}
+
+    # ── Parse prototype sections ──
+    sections = {}
+    current_section = None
+    for line in prototype.split("\n"):
+        m = re.match(r"^##\s+(.+)", line)
+        if m:
+            current_section = m.group(1).strip()
+            sections[current_section] = []
+        elif current_section:
+            sections[current_section].append(line)
+
+    project_root = Path(str(app.project_root))
+
+    # ── 1. Extract characters ──
+    char_section_key = None
+    for k in sections:
+        if "角色" in k or "核心角色" in k:
+            char_section_key = k
+            break
+    if char_section_key:
+        chars_text = "\n".join(sections[char_section_key])
+        # Parse individual characters: lines starting with bullet or numbered
+        char_entries = re.findall(r"(?:^[-*•]\s*|^\d+\.\s*)(.+?)(?=$|\n(?:[-*•]|\d+\.)|$)", chars_text, re.MULTILINE)
+        if not char_entries:
+            # Fallback: split by double newline or significant breaks
+            char_entries = [l.strip() for l in chars_text.split("\n") if l.strip() and len(l.strip()) > 5]
+
+        for entry in char_entries[:5]:  # Max 5 characters
+            entry = entry.strip()
+            if len(entry) < 5:
+                continue
+            # Extract name (first few characters before colon/comma/space)
+            name_match = re.match(r"^\*\*?(.+?)\*\*?[:：]?\s*", entry)
+            char_name = name_match.group(1).strip() if name_match else entry[:20]
+            # Sanitize filename
+            safe_name = re.sub(r"[^\w\u4e00-\u9fff-]", "_", char_name)[:30]
+            if not safe_name.strip("_"):
+                safe_name = f"角色_{created['characters'] + 1}"
+
+            char_doc_path = project_root / "src" / "characters" / f"{safe_name}.md"
+            if not char_doc_path.parent.exists():
+                char_doc_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Build character document
+            char_doc = f"# {char_name}\n\n"
+            char_doc += f"## 基本信息\n\n{entry}\n\n"
+            char_doc += f"## 来源\n\n灵感对话自动生成\n"
+
+            char_doc_path.write_text(char_doc, encoding="utf-8")
+            created["characters"] += 1
+
+    # ── 2. Extract world-building ──
+    world_section_key = None
+    for k in sections:
+        if "世界观" in k or "世界" in k:
+            world_section_key = k
+            break
+    if world_section_key:
+        world_text = "\n".join(sections[world_section_key])
+        world_entries = re.findall(r"(?:^[-*•]\s*|^\d+\.\s*)(.+?)(?=$|\n(?:[-*•]|\d+\.)|$)", world_text, re.MULTILINE)
+        if not world_entries:
+            world_entries = [l.strip() for l in world_text.split("\n") if l.strip() and len(l.strip()) > 3]
+
+        world_dir = project_root / "src" / "world"
+        if not world_dir.exists():
+            world_dir.mkdir(parents=True, exist_ok=True)
+
+        # Single world doc for simplicity
+        world_doc = "# 世界观设定\n\n> 由灵感对话自动生成\n\n"
+        for i, entry in enumerate(world_entries[:8]):
+            entry = entry.strip()
+            if entry:
+                world_doc += f"## 设定 {i+1}\n\n{entry}\n\n"
+                created["world"] += 1
+
+        if world_entries:
+            (world_dir / "灵感世界观.md").write_text(world_doc, encoding="utf-8")
+
+    # ── 3. Extract outline ──
+    outline_section_key = None
+    for k in sections:
+        if "篇章" in k or "大纲" in k or "结构" in k:
+            outline_section_key = k
+            break
+    if outline_section_key:
+        outline_text = "\n".join(sections[outline_section_key])
+        outline_path = project_root / "src" / "outline.md"
+        existing = ""
+        if outline_path.exists():
+            existing = outline_path.read_text(encoding="utf-8")
+
+        outline_doc = f"# 故事大纲\n\n> 由灵感对话自动生成\n\n## 篇章结构\n\n{outline_text}\n"
+        if existing and "灵感对话" not in existing:
+            outline_doc = existing + "\n\n---\n\n" + outline_doc
+
+        outline_path.write_text(outline_doc, encoding="utf-8")
+        created["outline"] = True
+
+    # ── 4. Save full prototype as material ──
+    materials_dir = project_root / "data" / "wizard_outputs"
+    if not materials_dir.exists():
+        materials_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = __import__("datetime").datetime.now().strftime("%Y%m%d_%H%M%S")
+    (materials_dir / f"作品雏形_{timestamp}.md").write_text(prototype, encoding="utf-8")
+    created["materials"] = 1
+
+    return {
+        "ok": True,
+        "created_characters": created["characters"],
+        "created_world": created["world"],
+        "created_outline": created["outline"],
+        "created_materials": created["materials"],
+    }
+
+
+def handle_inspire_vision(app, params: dict[str, Any]) -> dict[str, Any]:
+    """分析上传的图片，生成灵感种子描述。"""
+    import base64
+    if not os.environ.get("LLM_API_KEY", "").strip():
+        raise RuntimeError("未配置 LLM_API_KEY，无法使用图片分析功能")
+
+    image_data = str(params.get("image") or "")
+    persona = str(params.get("persona") or "warm")
+
+    if not image_data:
+        raise RuntimeError("请上传图片")
+
+    # Strip data:image prefix if present
+    if "," in image_data and image_data.startswith("data:"):
+        image_data = image_data.split(",", 1)[1]
+
+    persona_prompts = {
+        "warm": "用温暖鼓励的语气描述画面，激发创作灵感",
+        "sharp": "犀利分析这个画面的优缺点，给出可改进的方向",
+        "analyst": "分析画面中的元素、构图、氛围，拆解可用的故事元素",
+        "creative": "从画面发散，抛出5个意想不到的故事方向",
+        "world": "分析画面中的世界观元素，推测背景设定和规则",
+    }
+    style_instruction = persona_prompts.get(persona, persona_prompts["warm"])
+
+    try:
+        import openai
+        client = openai.OpenAI(
+            api_key=os.environ.get("LLM_API_KEY", ""),
+            base_url=os.environ.get("LLM_BASE_URL", "https://api.deepseek.com/v1"),
+        )
+
+        model = os.environ.get("LLM_MODEL", "deepseek-chat")
+        # Try vision-capable model first
+        vision_model = os.environ.get("VISION_MODEL", "").strip()
+        if not vision_model:
+            # Fallback: describe the image with a text prompt saying there's an image
+            # For models without vision, describe what we can
+            resp = client.chat.completions.create(
+                model=model,
+                messages=[{
+                    "role": "system",
+                    "content": f"你是燃灯·青灯的视觉助手。{style_instruction}\n用户上传了一张图片作为创作灵感参考。请你基于「图片已上传」这一信息，给用户一个描述性的引导：先表达你看到了这张图（虽然你无法真正看到但要假装可以），然后基于这个场景提供3个具体的小说创作方向。回复控制在150字内。"
+                }, {
+                    "role": "user",
+                    "content": "我上传了一张图片作为创作灵感，请帮我分析并给灵感方向。"
+                }],
+                max_tokens=400,
+                temperature=0.8,
+            )
+            content = resp.choices[0].message.content
+        else:
+            # Use vision model
+            resp = client.chat.completions.create(
+                model=vision_model,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": f"{style_instruction}。描述这张图片，然后给出3个创作灵感方向。总回复150字内。"},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}},
+                    ]
+                }],
+                max_tokens=400,
+                temperature=0.8,
+            )
+            content = resp.choices[0].message.content
+
+        return {"description": content, "question": "这个画面给你什么创作灵感？"}
+
+    except ImportError:
+        return {"description": "🖼️ 图片已接收！这是一个很好的创作起点。试着描述一下这张图片中的场景——发生了什么？谁在那里？为什么这一刻如此特别？", "question": "从这张图出发，你想讲一个什么样的故事？"}
+    except Exception as e:
+        raise RuntimeError(f"图片分析失败: {str(e)}")

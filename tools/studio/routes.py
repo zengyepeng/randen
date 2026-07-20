@@ -49,6 +49,8 @@ from .handlers import (
     handle_ai_story,
     handle_ai_character,
     handle_ai_world,
+    handle_inspire_apply,
+    handle_inspire_vision,
 )
 
 # (处理器, 是否需要项目已初始化)
@@ -89,6 +91,8 @@ POST_ROUTES: dict[str, tuple[Any, bool]] = {
     "/api/ai/story":           (handle_ai_story,          True),
     "/api/ai/character":       (handle_ai_character,      True),
     "/api/ai/world":           (handle_ai_world,          True),
+    "/api/inspire/apply":     (handle_inspire_apply,    True),
+    "/api/inspire/vision":    (handle_inspire_vision,   False),
     "/api/material/delete":    (handle_material_delete, True),
     "/api/write":             (handle_write,           True),
     "/api/review":            (handle_review,          True),
