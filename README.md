@@ -106,7 +106,7 @@
 ### 1. 安装
 
 ```bash
-git clone https://github.com/LiPu-jpg/randen.git
+git clone https://github.com/zengyepeng/randen.git
 cd randen
 python3.10 -m venv .venv
 source .venv/bin/activate
