@@ -269,7 +269,6 @@ function renderSourcePacks(packs) {
   });
 }
 
-function renderOnboarding(readiness) {
   const guide = $("#onboarding-guide");
   if (!guide) return;
 
