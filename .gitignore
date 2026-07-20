@@ -76,9 +76,7 @@ Thumbs.db
 book_chunks/
 
 # Runtime data (novels content is per-user, not shared)
-
-# Generated debug snapshots
-data/novels/*/data/test_outputs/
+data/novels/
 
 # Local worktrees
 .worktrees/

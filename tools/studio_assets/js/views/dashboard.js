@@ -75,6 +75,7 @@ export function renderWorkspace() {
 
   renderDocumentList(state.view === "dashboard" ? "chapters" : state.view);
   renderOperations();
+  renderOnboarding(snapshot.readiness);
 }
 
 function renderReadiness(readiness) {
@@ -266,5 +267,44 @@ function renderSourcePacks(packs) {
     });
     row.append(copy, actions);
     root.append(row);
+  });
+}
+
+function renderOnboarding(readiness) {
+  const guide = $("#onboarding-guide");
+  if (!guide) return;
+
+  // Count ready items
+  let readyCount = 0;
+  Object.values(readiness).forEach(v => { if (v) readyCount++; });
+
+  // Hide if >75% ready or dismissed
+  const dismissed = localStorage.getItem("randen-onboarding-dismissed");
+  if (dismissed || readyCount >= 4) {
+    guide.hidden = true;
+    return;
+  }
+
+  guide.hidden = false;
+
+  // Mark steps as checked
+  const stepMap = {
+    foundation: "onboard-step-outline",
+    characters: "onboard-step-char",
+    ai_configured: "onboard-step-ai",
+    outline: "onboard-step-outline",
+  };
+  Object.entries(readiness).forEach(([key, val]) => {
+    const stepId = stepMap[key];
+    if (val && stepId) {
+      const el = document.getElementById(stepId);
+      if (el) el.classList.add("checked");
+    }
+  });
+
+  // Dismiss button
+  $("#onboarding-dismiss")?.addEventListener("click", () => {
+    guide.hidden = true;
+    localStorage.setItem("randen-onboarding-dismissed", "1");
   });
 }

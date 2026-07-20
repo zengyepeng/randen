@@ -336,3 +336,94 @@
   justify-content: space-between;
   gap: 16px;
 }
+
+/* ---- Onboarding Card ---- */
+.onboarding-card {
+  margin-bottom: 24px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  padding: 28px 32px;
+  box-shadow: 0 1px 4px var(--shadow-color, rgba(0,0,0,.06));
+}
+
+.onboarding-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.onboarding-intro {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  font-size: .95rem;
+}
+
+.onboarding-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.onboard-step {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+  transition: background .2s, box-shadow .2s;
+}
+
+.onboard-step.checked {
+  background: var(--surface-subtle);
+  opacity: .65;
+}
+
+.step-number {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: .85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboard-step.checked .step-number {
+  background: var(--success, #22c55e);
+  content: '✓';
+}
+
+.step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.step-body strong {
+  font-size: .95rem;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.step-body p {
+  color: var(--text-secondary);
+  font-size: .88rem;
+  margin: 0 0 6px;
+}
+
+.onboarding-resume {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
