@@ -580,6 +580,8 @@ def handle_ai_story(app, params):
         return story_assist(action, content, None, client)
     except ImportError:
         return story_assist(action, content)
+    except Exception as e:
+        return story_assist(action, content)  # 降级到本地模式
 
 def handle_ai_character(app, params):
     from tools.ai_assistants import character_assist
@@ -591,6 +593,8 @@ def handle_ai_character(app, params):
         return character_assist(action, content, None, client)
     except ImportError:
         return character_assist(action, content)
+    except Exception as e:
+        return character_assist(action, content)  # 降级到本地模式
 
 def handle_ai_world(app, params):
     from tools.ai_assistants import world_assist
@@ -602,6 +606,8 @@ def handle_ai_world(app, params):
         return world_assist(action, content, None, client)
     except ImportError:
         return world_assist(action, content)
+    except Exception as e:
+        return world_assist(action, content)  # 降级到本地模式
 
 
 # ═══════════════════════════════════════════════════════════════

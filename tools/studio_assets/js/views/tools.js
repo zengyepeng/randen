@@ -660,79 +660,153 @@ function _addSaveButton(container, resultType, data, title) {
 
 /* ═══ AI Assistants (Story/Character/World) ═══ */
 export function initAIAssistants() {
-  const viewConfigs = {
+  const configs = {
     story: {
-      tabs: ["story","story","story","story"],
+      label: "📖 故事 AI 辅助",
+      api: "/api/ai/story",
       actions: [
-        {id:"ai-story-bg", label:"📖 展开背景", action:"background"},
-        {id:"ai-story-outline", label:"📋 生成大纲", action:"outline"},
-        {id:"ai-story-intent", label:"🎯 创作意图", action:"author_intent"},
-        {id:"ai-story-focus", label:"🧭 创作罗盘", action:"current_focus"},
-      ],
-      api: "/api/ai/story"
+        {action:"background", label:"📖 展开背景"},
+        {action:"outline", label:"📋 生成大纲"},
+        {action:"author_intent", label:"🎯 创作意图"},
+        {action:"current_focus", label:"🧭 创作罗盘"},
+      ]
     },
     characters: {
-      tabs: ["characters","characters","characters"],
+      label: "👤 人物 AI 辅助",
+      api: "/api/ai/character",
       actions: [
-        {id:"ai-char-create", label:"👤 创建角色", action:"create"},
-        {id:"ai-char-dialogue", label:"💬 对话样本", action:"dialogue_sample"},
-        {id:"ai-char-arc", label:"📈 成长弧线", action:"arc"},
-      ],
-      api: "/api/ai/character"
+        {action:"create", label:"👤 创建角色"},
+        {action:"dialogue_sample", label:"💬 对话样本"},
+        {action:"arc", label:"📈 成长弧线"},
+      ]
     },
     world: {
-      tabs: ["world","world","world","world","world"],
+      label: "🌍 世界 AI 辅助",
+      api: "/api/ai/world",
       actions: [
-        {id:"ai-world-rules", label:"⚖️ 世界规则", action:"rules"},
-        {id:"ai-world-timeline", label:"⏳ 时间线", action:"timeline"},
-        {id:"ai-world-geo", label:"🗺️ 地理", action:"geography"},
-        {id:"ai-world-terms", label:"📖 术语表", action:"terminology"},
-        {id:"ai-world-entity", label:"🏛️ 实体", action:"entity"},
-      ],
-      api: "/api/ai/world"
+        {action:"rules", label:"⚖️ 世界规则"},
+        {action:"timeline", label:"⏳ 时间线"},
+        {action:"geography", label:"🗺️ 地理"},
+        {action:"terminology", label:"📖 术语表"},
+        {action:"entity", label:"🏛️ 实体"},
+      ]
     }
   };
 
-  // Inject AI panels into story/characters/world views
-  Object.entries(viewConfigs).forEach(([viewName, config]) => {
-    // Find the view container
-    const viewsToCheck = config.tabs.map(t => document.querySelector(`[data-view="${t}"]`));
-    // Inject when navigated
-    const observer = new MutationObserver(() => {
-      config.tabs.forEach(tab => {
-        const view = document.getElementById(`${tab}-view`);
-        if (!view || view.querySelector(".ai-panel")) return;
-        const panel = document.createElement("div");
-        panel.className = "ai-panel";
-        panel.innerHTML = `<h3 style="font-size:.9rem;margin:0 0 8px">🤖 AI 辅助</h3>
-          <div class="ai-actions">
-            ${config.actions.map(a => `<button id="${a.id}" class="quiet-button ai-btn" data-ai-action="${a.action}" data-ai-api="${config.api}">${a.label}</button>`).join('')}
-          </div>
-          <pre class="ai-result context-preview" hidden></pre>
-          <input class="engine-input ai-input" placeholder="输入你的想法或已有内容，AI 将基于此生成…" style="width:100%;margin-top:8px">`;
-        view.querySelector(".workspace-view-header")?.after(panel);
-        // Bind buttons
-        panel.querySelectorAll(".ai-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const input = panel.querySelector(".ai-input")?.value || "";
-            const result = panel.querySelector(".ai-result");
-            const action = btn.dataset.aiAction;
-            const api = btn.dataset.aiApi;
-            if (btn) btn.classList.add("active");
-            if (result) { result.hidden = false; result.textContent = "🤖 AI 生成中…"; }
-            try {
-              const res = await fetch(api, {
-                method: "POST", headers: {"Content-Type":"application/json","X-Randen-Studio":"1"},
-                body: JSON.stringify({ action, content: input })
-              });
-              const data = await res.json();
-              if (result) { result.textContent = data.result || data.error || "无结果"; }
-            } catch(e) { if (result) result.textContent = "请求失败: " + (e.message||e); }
-            if (btn) btn.classList.remove("active");
+  // Inject once — single AI panel in editor-view, content changes per view
+  const editorView = $("#editor-view");
+  if (!editorView) return;
+
+  // Create AI panel
+  const panel = document.createElement("div");
+  panel.id = "ai-assist-panel";
+  panel.className = "ai-panel";
+  panel.hidden = true;
+  panel.innerHTML = `
+    <h3 id="ai-panel-title" style="font-size:.9rem;margin:0 0 8px">🤖 AI 辅助</h3>
+    <div class="ai-actions" id="ai-panel-buttons"></div>
+    <pre class="ai-result context-preview" id="ai-panel-result" hidden></pre>
+    <input id="ai-panel-input" class="engine-input" placeholder="输入你的想法或已有内容，AI 将基于此生成…" style="width:100%;margin-top:8px">`;
+
+  // Insert after editor toolbar
+  const toolbar = editorView.querySelector(".editor-toolbar");
+  if (toolbar) {
+    toolbar.after(panel);
+  } else {
+    editorView.prepend(panel);
+  }
+
+  // Watch for view changes and update AI panel
+  const { router } = await import("../router.js");
+  const origSwitchView = router?.switchView;
+
+  // Hook into navigation changes via MutationObserver on nav items
+  observeNavChanges(configs);
+
+  // Also bind to keyboard/click events - re-check on editor-view visibility changes
+  const observer = new MutationObserver(() => {
+    if (editorView.hidden) {
+      panel.hidden = true;
+      return;
+    }
+    // Determine active view from sidebar active nav item
+    const activeNav = document.querySelector(".nav-item.active");
+    const activeView = activeNav?.dataset?.view;
+    if (activeView && configs[activeView]) {
+      updateAIPanel(panel, configs[activeView]);
+    } else {
+      panel.hidden = true;
+    }
+  });
+  observer.observe(editorView, { attributes: true, attributeFilter: ["hidden"] });
+
+  // Initial state
+  if (!editorView.hidden) {
+    const activeNav = document.querySelector(".nav-item.active");
+    const activeView = activeNav?.dataset?.view;
+    if (activeView && configs[activeView]) {
+      updateAIPanel(panel, configs[activeView]);
+    }
+  }
+}
+
+function observeNavChanges(configs) {
+  // Observe sidebar nav for active changes
+  const nav = document.querySelector(".sidebar-nav");
+  if (!nav) return;
+  const editorView = $("#editor-view");
+  const panel = $("#ai-assist-panel");
+  if (!editorView || !panel) return;
+
+  const observer = new MutationObserver(() => {
+    if (editorView.hidden) {
+      panel.hidden = true;
+      return;
+    }
+    const activeNav = document.querySelector(".nav-item.active");
+    const activeView = activeNav?.dataset?.view;
+    if (activeView && configs[activeView]) {
+      updateAIPanel(panel, configs[activeView]);
+    } else {
+      panel.hidden = true;
+    }
+  });
+  observer.observe(nav, { attributes: true, subtree: true, attributeFilter: ["class"] });
+}
+
+function updateAIPanel(panel, config) {
+  panel.hidden = false;
+  $("#ai-panel-title").textContent = `🤖 ${config.label}`;
+  const btnContainer = $("#ai-panel-buttons");
+  if (btnContainer) {
+    btnContainer.innerHTML = config.actions.map(a =>
+      `<button class="quiet-button ai-btn" data-ai-action="${a.action}" data-ai-api="${config.api}">${a.label}</button>`
+    ).join('');
+    // Re-bind buttons
+    btnContainer.querySelectorAll(".ai-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const input = $("#ai-panel-input")?.value || "";
+        const result = $("#ai-panel-result");
+        const action = btn.dataset.aiAction;
+        const api = btn.dataset.aiApi;
+        btn.classList.add("active");
+        if (result) { result.hidden = false; result.textContent = "🤖 AI 生成中…"; }
+        try {
+          const res = await fetch(api, {
+            method: "POST", headers: {"Content-Type":"application/json","X-Randen-Studio":"1"},
+            body: JSON.stringify({ action, content: input })
           });
-        });
+          const data = await res.json();
+          if (result) {
+            result.textContent = data.result || data.error || "无结果";
+            if (data.ai === false) result.style.color = "var(--text-tertiary)";
+            else result.style.color = "";
+          }
+        } catch(e) {
+          if (result) result.textContent = "请求失败: " + (e.message||e);
+        }
+        btn.classList.remove("active");
       });
     });
-    observer.observe(document.querySelector(".main-panel") || document.body, {childList:true,subtree:true});
-  });
+  }
 }
