@@ -1,196 +1,148 @@
-/* ===== Tools View + Creation Engine ===== */
-
+/* ===== Creation Wizard (modal dialog) ===== */
 import { $, $$ } from "../utils.js";
 
-/* ===== Creation Engine ===== */
-let _faqData = null;
+let _ewStep = 1;
+let _ewResults = {};
 
-export function initCreationEngine() {
-  // Accordion: one row open at a time
-  $$(".engine-toggle").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const row = btn.closest(".engine-row");
-      const body = row?.querySelector(".engine-body");
-      const isOpen = btn.getAttribute("aria-expanded") === "true";
-      $$(".engine-toggle").forEach(b => b.setAttribute("aria-expanded", "false"));
-      $$(".engine-body").forEach(b => b.hidden = true);
-      if (!isOpen && body) { btn.setAttribute("aria-expanded", "true"); body.hidden = false; }
-    });
+export function initCreationWizard() {
+  $("#engine-launch")?.addEventListener("click", () => {
+    const dlg = $("#engine-dialog");
+    if (dlg) { dlg.showModal(); goStep(1); }
   });
+  $("#engine-dialog-close")?.addEventListener("click", () => $("#engine-dialog")?.close());
+  $("#engine-dialog")?.addEventListener("click", (e) => { if (e.target === e.currentTarget) e.target.close(); });
 
-  const bind = (id, handler) => $(`#engine-${id}`)?.addEventListener("click", handler);
+  // Next/prev buttons
+  $$(".ed-next").forEach(btn => {
+    btn.addEventListener("click", () => { const s = parseInt(btn.dataset.next); if (s) goStep(s); });
+  });
+  $$(".ed-prev").forEach(btn => {
+    btn.addEventListener("click", () => { const s = parseInt(btn.dataset.prev); if (s) goStep(s); });
+  });
+  $(".ed-done")?.addEventListener("click", () => $("#engine-dialog")?.close());
 
-  bind("market", async () => {
-    const btn = $("#engine-market"); const result = $("#engine-market-result");
+  // Step 1: Market
+  $("#ew-market")?.addEventListener("click", async () => {
+    const btn = $("#ew-market"); const out = $("#ew-market-out");
     if (btn) btn.disabled = true;
-    if (result) { result.hidden = false; result.textContent = "\u23f3 分析中\u2026"; }
+    if (out) { out.hidden = false; out.textContent = "分析中…"; }
     try {
-      const data = await _apiPost("/api/market", { platform: $("#engine-platform")?.value || "默认" });
-      if (result) {
-        result.innerHTML = data.markets.map(m => `
-<div class="engine-result-item">
-  <div class="eri-header">
-    <strong>${_esc(m.genre)}</strong>
-    <span class="eri-tags">
-      <span class="eri-tag eri-tag--traffic">流量:${_esc(m.traffic)}</span>
-      <span class="eri-tag eri-tag--comp">竞争:${_esc(m.competition)}</span>
-      <span class="eri-tag">新人${_esc(m.newcomer)}</span>
-    </span>
-  </div>
-  <p class="eri-tip">\ud83d\udca1 ${_esc(m.tip)}</p>
+      const data = await _ewPost("/api/market", { platform: $("#ew-platform")?.value || "默认" });
+      if (out) {
+        out.innerHTML = data.markets.map(m => `
+<div class="ew-item">
+  <strong>${_ewEsc(m.genre)}</strong>
+  <span class="ew-tags">
+    <span class="ew-tag ew-tg-tr">${_ewEsc(m.traffic)}</span>
+    <span class="ew-tag ew-tg-co">${_ewEsc(m.competition)}</span>
+    <span class="ew-tag">新人${_ewEsc(m.newcomer)}</span>
+  </span>
+  <p class="ew-tip">${_ewEsc(m.tip)}</p>
 </div>`).join('');
-        _highlightFlow(1);
       }
-    } catch (e) { if (result) _showError(result, e); }
+      _ewResults.market = true;
+      _enableNext(2);
+    } catch (e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
 
-  bind("dissect", async () => {
-    const text = $("#engine-dissect-text")?.value || "";
-    const btn = $("#engine-dissect"); const result = $("#engine-dissect-result");
-    if (!text.trim()) { if (result) _showError(result, new Error("请先粘贴正文内容")); return; }
+  // Step 2: Dissect
+  $("#ew-dissect")?.addEventListener("click", async () => {
+    const text = $("#ew-dissect-text")?.value || "";
+    const btn = $("#ew-dissect"); const out = $("#ew-dissect-out");
+    if (!text.trim()) { if (out) _ewErr(out, new Error("请先粘贴参考作品正文")); return; }
     if (btn) btn.disabled = true;
-    if (result) { result.hidden = false; result.textContent = "\u23f3 拆解中\u2026"; }
+    if (out) { out.hidden = false; out.textContent = "拆解中…"; }
     try {
-      const data = await _apiPost("/api/dissect", { text, title: $("#engine-dissect-title")?.value || "未命名" });
-      if (result) {
-        const hooks = (data.hooks_detected || []).map(h => `<span class="eri-chip">${_esc(h)}</span>`).join(' ');
-        const gfs = (data.golden_finger_style || []).map(g => `<span class="eri-chip">${_esc(g)}</span>`).join(' ');
-        result.innerHTML = `
-<div class="engine-result-item">
-  <div class="eri-header"><strong>\ud83d\udcd6 ${_esc(data.title)}</strong></div>
-  <div class="eri-stat-row">
-    <span class="eri-stat">\ud83d\udcdd 约${data.estimated_words}字</span>
-    <span class="eri-stat">\ud83d\udcd1 约${data.estimated_chapters}章</span>
-    <span class="eri-stat">\ud83c\udfb5 ${_esc(data.rhythm)}</span>
-  </div>
-  <div class="eri-section"><strong>\ud83c\udfa3 钩子模式</strong><p>${hooks || '未检测到明显钩子'}</p></div>
-  <div class="eri-section"><strong>\u26a1 金手指类型</strong><p>${gfs || '未检测到明显金手指'}</p></div>
-  <div class="eri-section eri-suggestion">${_esc(data.suggestion)}</div>
+      const data = await _ewPost("/api/dissect", { text, title: $("#ew-dissect-title")?.value || "" });
+      const h = (data.hooks_detected||[]).map(x => `<span class="ew-chip">${_ewEsc(x)}</span>`).join('');
+      const g = (data.golden_finger_style||[]).map(x => `<span class="ew-chip">${_ewEsc(x)}</span>`).join('');
+      if (out) out.innerHTML = `
+<div class="ew-item">
+  <p><strong>${_ewEsc(data.title)}</strong> · 约${data.estimated_words}字 · ${_ewEsc(data.rhythm)}</p>
+  ${h ? `<p>🎣 钩子: ${h}</p>` : ''}
+  ${g ? `<p>⚡ 金手指: ${g}</p>` : ''}
+  <p class="ew-tip">${_ewEsc(data.suggestion)}</p>
 </div>`;
-        _highlightFlow(2);
-      }
-    } catch (e) { if (result) _showError(result, e); }
+      _ewResults.dissect = true;
+      _enableNext(3);
+    } catch (e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
 
-  bind("idea", async () => {
-    const premise = $("#engine-idea-premise")?.value || "";
-    const btn = $("#engine-idea"); const result = $("#engine-idea-result");
-    if (!premise.trim()) { if (result) _showError(result, new Error("请先输入灵感")); return; }
+  // Step 3: Idea
+  $("#ew-idea")?.addEventListener("click", async () => {
+    const premise = $("#ew-idea-premise")?.value || "";
+    const btn = $("#ew-idea"); const out = $("#ew-idea-out");
+    if (!premise.trim()) { if (out) _ewErr(out, new Error("请输入你的灵感")); return; }
     if (btn) btn.disabled = true;
-    if (result) { result.hidden = false; result.textContent = "\u23f3 分析中\u2026"; }
+    if (out) { out.hidden = false; out.textContent = "分析中…"; }
     try {
-      const data = await _apiPost("/api/idea", { premise });
+      const data = await _ewPost("/api/idea", { premise });
       const s = data.setting;
-      if (result) {
-        const qs = (data.prompt_questions || []).map(q => `<p>\u2022 ${_esc(q)}</p>`).join('');
-        const ns = (data.next_steps || []).map(s => `\ud83d\ude80 ${_esc(s)}<br>`).join('');
-        result.innerHTML = `
-<div class="engine-result-item">
-  <div class="eri-header"><strong>\ud83c\udff7 ${_esc(data.genre)}</strong></div>
-  <div class="eri-kv"><span>\u7075\u611f</span><span>${_esc(s.premise)}</span></div>
-  <div class="eri-kv"><span>\u91d1\u624b\u6307</span><span>${_esc(s.golden_finger)}</span></div>
-  <div class="eri-kv"><span>\u4ee3\u4ef7\u9650\u5236</span><span>${_esc(s.golden_finger_cost)}</span></div>
-  <div class="eri-kv"><span>\u76ee\u6807\u60c5\u7eea</span><span>${_esc(s.target_emotion)}</span></div>
-  <div class="eri-kv"><span>\u4e3b\u89d2\u7f3a\u9677</span><span>${_esc(s.protagonist_flaw)}</span></div>
-  <div class="eri-section"><strong>\u2753 \u8fd8\u9700\u60f3\u6e05\u695a</strong>${qs}</div>
-  <div class="eri-section eri-suggestion">${ns}</div>
+      if (out) out.innerHTML = `
+<div class="ew-item">
+  <p><strong>分类：${_ewEsc(data.genre)}</strong></p>
+  <p>💡 ${_ewEsc(s.premise)}</p>
+  <p>🎯 金手指：${_ewEsc(s.golden_finger)}</p>
+  <p>⚠️ 代价：${_ewEsc(s.golden_finger_cost)}</p>
+  ${(data.next_steps||[]).map(x => `<p>→ ${_ewEsc(x)}</p>`).join('')}
 </div>`;
-        _highlightFlow(3);
-      }
-    } catch (e) { if (result) _showError(result, e); }
+      _ewResults.idea = true;
+      _enableNext(4);
+    } catch (e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
 
-  bind("opening", async () => {
-    const text = $("#engine-opening-text")?.value || "";
-    const btn = $("#engine-opening"); const result = $("#engine-opening-result");
-    if (text.length < 50) { if (result) _showError(result, new Error("请至少粘贴200字开篇")); return; }
+  // Step 4: Opening
+  $("#ew-opening")?.addEventListener("click", async () => {
+    const text = $("#ew-opening-text")?.value || "";
+    const btn = $("#ew-opening"); const out = $("#ew-opening-out");
+    if (text.length < 50) { if (out) _ewErr(out, new Error("请至少粘贴200字开篇")); return; }
     if (btn) btn.disabled = true;
-    if (result) { result.hidden = false; result.textContent = "\u23f3 诊断中\u2026"; }
+    if (out) { out.hidden = false; out.textContent = "诊断中…"; }
     try {
-      const data = await _apiPost("/api/opening", { text });
-      const pct = data.score;
-      const color = pct >= 85 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#ef4444';
-      const checks = (data.items || []).map(i => `
-    <div class="eri-check ${i.passed ? 'eri-check-pass' : 'eri-check-fail'}">
-      <span>${i.passed ? '\u2705' : '\u274c'}</span>
-      <span>${_esc(i.check)}</span>
-      ${!i.passed ? `<small>${_esc(i.detail)}</small>` : ''}
-    </div>`).join('');
-      if (result) {
-        result.innerHTML = `
-<div class="engine-result-item">
-  <div class="eri-score" style="--score-color:${color};--score-pct:${pct}%">
-    <span class="eri-score-num">${pct}</span><span class="eri-score-label">/ 100</span>
-  </div>
-  <p class="eri-verdict">${_esc(data.verdict)}</p>
+      const data = await _ewPost("/api/opening", { text });
+      const c = data.score >= 85 ? '#22c55e' : data.score >= 60 ? '#f59e0b' : '#ef4444';
+      const checks = (data.items||[]).map(i => `
+<div class="${i.passed?'ew-ok':'ew-no'}">${i.passed?'✅':'❌'} ${_ewEsc(i.check)}${!i.passed?`<br><small>${_ewEsc(i.detail)}</small>`:''}</div>`).join('');
+      if (out) out.innerHTML = `
+<div class="ew-item">
+  <div class="ew-score" style="color:${c}">${data.score}<small>/100</small></div>
+  <p class="ew-verdict">${_ewEsc(data.verdict)}</p>
   ${checks}
-  ${data.quick_fix ? `<div class="eri-section eri-suggestion">\u26a1 ${_esc(data.quick_fix)}</div>` : ''}
 </div>`;
-        _highlightFlow(4);
-      }
-    } catch (e) { if (result) _showError(result, e); }
+    } catch (e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
-
-  loadFAQ();
 }
 
-async function loadFAQ() {
-  if (_faqData) { _renderFAQ(_faqData); return; }
-  const root = $("#engine-faq");
-  if (!root) return;
-  try { _faqData = await _apiPost("/api/faq", {}); _renderFAQ(_faqData); }
-  catch (_) { if (root) root.innerHTML = '<small class="eri-error">加载FAQ失败</small>'; }
-}
-
-function _renderFAQ(data) {
-  const root = $("#engine-faq");
-  if (!root) return;
-  root.replaceChildren();
-  let activeChip = null;
-  Object.entries(data.faq).forEach(([cat, items]) => {
-    const catLabel = document.createElement("div");
-    catLabel.className = "faq-category"; catLabel.textContent = cat;
-    root.append(catLabel);
-    items.forEach(item => {
-      const chip = document.createElement("span");
-      chip.className = "faq-chip"; chip.textContent = item.q;
-      chip.addEventListener("click", () => {
-        if (activeChip === chip) {
-          chip.classList.remove("active");
-          const panel = chip.nextElementSibling;
-          if (panel?.classList.contains("faq-answer-panel")) { panel.remove(); activeChip = null; return; }
-        }
-        if (activeChip) { activeChip.classList.remove("active"); const prev = activeChip.nextElementSibling; if (prev?.classList.contains("faq-answer-panel")) prev.remove(); }
-        chip.classList.add("active"); activeChip = chip;
-        const panel = document.createElement("div");
-        panel.className = "faq-answer-panel"; panel.textContent = "\ud83d\udcac " + item.a;
-        chip.after(panel);
-      });
-      root.append(chip);
-    });
+function goStep(n) {
+  _ewStep = n;
+  $$(".ed-step").forEach(el => el.classList.toggle("active", parseInt(el.dataset.step) === n));
+  $$(".ed-dot").forEach((el, i) => {
+    el.classList.remove("active", "done");
+    if (i + 1 === n) el.classList.add("active");
+    else if (i + 1 < n) el.classList.add("done");
   });
+  $$(".ed-line").forEach((el, i) => el.classList.toggle("done", i < n - 1));
+  // Reset next button disabled state to check results
+  if (_ewResults["market"]) _enableNext(2);
+  if (_ewResults["dissect"]) _enableNext(3);
+  if (_ewResults["idea"]) _enableNext(4);
 }
 
-function _highlightFlow(step) {
-  $$(".flow-step").forEach((el, i) => el.classList.toggle("active", i + 1 === step));
+function _enableNext(step) {
+  const btn = document.querySelector(`.ed-next[data-next="${step}"]`);
+  if (btn) btn.disabled = false;
 }
 
-function _showError(el, err) {
-  el.innerHTML = `<span class="eri-error">\u26a0 ${_esc(err.message || err)}</span>`;
-  el.hidden = false;
-}
+function _ewErr(el, e) { el.innerHTML = `<span style="color:#ef4444">⚠ ${_ewEsc(e.message||e)}</span>`; el.hidden = false; }
 
-function _esc(s) {
-  const map = { '<': '&lt;', '>': '&gt;', '&': '&amp;' };
-  return String(s || '').replace(/[<>&]/g, c => map[c] || c);
-}
+function _ewEsc(s) { const m = {'<':'&lt;','>':'&gt;','&':'&amp;'}; return String(s||'').replace(/[<>&]/g, c => m[c]||c); }
 
-async function _apiPost(url, body) {
-  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  if (!res.ok) { const err = await res.json().catch(() => ({ detail: res.statusText })); throw new Error(err.detail || "请求失败 (" + res.status + ")"); }
+async function _ewPost(url, body) {
+  const res = await fetch(url, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  if (!res.ok) { const err = await res.json().catch(()=>({detail:res.statusText})); throw new Error(err.detail||`请求失败 (${res.status})`); }
   return res.json();
 }

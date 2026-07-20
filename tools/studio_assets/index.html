@@ -72,6 +72,15 @@
             </div>
             <button id="model-state" class="status-pill" type="button" title="配置当前 Studio 会话的模型">模型未配置</button>
           </div>
+          <div class="dashboard-hero">
+            <button id="engine-launch" class="hero-button" type="button">
+              <span class="hero-icon">🚀</span>
+              <span class="hero-text">
+                <strong>从零开始创作</strong>
+                <small>扫榜选材 → 拆书对标 → 脑洞完善 → 开篇诊断，四步走完</small>
+              </span>
+            </button>
+          </div>
           <section id="onboarding-guide" class="onboarding-card" aria-labelledby="onboarding-title">
             <div class="onboarding-header">
               <div>
@@ -514,6 +523,75 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <!-- ═══ 创作向导弹窗 ═══ -->
+  <dialog id="engine-dialog" class="engine-dialog">
+    <div class="ed-header">
+      <h2>🏮 创作向导</h2>
+      <div class="ed-steps" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1">
+        <span class="ed-dot active">1</span><span class="ed-line"></span>
+        <span class="ed-dot">2</span><span class="ed-line"></span>
+        <span class="ed-dot">3</span><span class="ed-line"></span>
+        <span class="ed-dot">4</span>
+      </div>
+      <button id="engine-dialog-close" class="icon-button" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="ed-body">
+      <!-- Step 1: 扫榜 -->
+      <div class="ed-step active" data-step="1">
+        <h3>① 选平台，看赛道</h3>
+        <p class="ed-desc">选目标平台，看看什么类型流量大、竞争小、新人友好。</p>
+        <select id="ew-platform" class="ew-select">
+          <option value="默认">全平台通用</option>
+          <option value="番茄小说">番茄小说</option>
+          <option value="起点中文网">起点中文网</option>
+          <option value="知乎盐言">知乎盐言</option>
+        </select>
+        <button id="ew-market" class="ew-run">开始分析</button>
+        <div id="ew-market-out" class="ew-out" hidden></div>
+        <div class="ed-actions">
+          <button class="ed-next" data-next="2" disabled>下一步：拆书对标 →</button>
+        </div>
+      </div>
+      <!-- Step 2: 拆书 -->
+      <div class="ed-step" data-step="2">
+        <h3>② 拆解一本参考作品</h3>
+        <p class="ed-desc">粘贴一段你想学习的作品正文，拆出它的爽点、金手指和钩子结构。</p>
+        <input id="ew-dissect-title" class="ew-input" placeholder="作品名（可选）">
+        <textarea id="ew-dissect-text" class="ew-textarea" rows="6" placeholder="粘贴参考作品正文片段…"></textarea>
+        <button id="ew-dissect" class="ew-run">拆解分析</button>
+        <div id="ew-dissect-out" class="ew-out" hidden></div>
+        <div class="ed-actions">
+          <button class="ed-prev" data-prev="1">← 上一步</button>
+          <button class="ed-next" data-next="3" disabled>下一步：完善脑洞 →</button>
+        </div>
+      </div>
+      <!-- Step 3: 脑洞 -->
+      <div class="ed-step" data-step="3">
+        <h3>③ 完善你的脑洞</h3>
+        <p class="ed-desc">写下一句话灵感，我来帮你展开成完整的核心设定体系。</p>
+        <textarea id="ew-idea-premise" class="ew-textarea" rows="2" placeholder="例：程序员穿越到修真世界，靠写代码修仙…"></textarea>
+        <button id="ew-idea" class="ew-run">完善脑洞</button>
+        <div id="ew-idea-out" class="ew-out" hidden></div>
+        <div class="ed-actions">
+          <button class="ed-prev" data-prev="2">← 上一步</button>
+          <button class="ed-next" data-next="4" disabled>下一步：开篇诊断 →</button>
+        </div>
+      </div>
+      <!-- Step 4: 开篇 -->
+      <div class="ed-step" data-step="4">
+        <h3>④ 诊断你的开篇</h3>
+        <p class="ed-desc">写好第一章了吗？贴进来，7维度检查——钩子、冲突、节奏、情绪全覆盖。</p>
+        <textarea id="ew-opening-text" class="ew-textarea" rows="6" placeholder="粘贴你的第一章开篇内容…"></textarea>
+        <button id="ew-opening" class="ew-run">诊断开篇</button>
+        <div id="ew-opening-out" class="ew-out" hidden></div>
+        <div class="ed-actions">
+          <button class="ed-prev" data-prev="3">← 上一步</button>
+          <button class="ed-done primary-button" type="button">✓ 完成引导，开始写作</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <script type="module" src="/js/app.js"></script>
 </body>
 </html>
