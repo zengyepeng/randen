@@ -142,7 +142,11 @@ function _ewErr(el, e) { el.innerHTML = `<span style="color:#ef4444">⚠ ${_ewEs
 function _ewEsc(s) { const m = {'<':'&lt;','>':'&gt;','&':'&amp;'}; return String(s||'').replace(/[<>&]/g, c => m[c]||c); }
 
 async function _ewPost(url, body) {
-  const res = await fetch(url, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
-  if (!res.ok) { const err = await res.json().catch(()=>({detail:res.statusText})); throw new Error(err.detail||`请求失败 (${res.status})`); }
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Randen-Studio": "1" },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) { const err = await res.json().catch(()=>({detail:res.statusText})); throw new Error(err.error || err.detail || `请求失败 (${res.status})`); }
   return res.json();
 }
