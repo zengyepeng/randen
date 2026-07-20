@@ -113,8 +113,36 @@ class StudioApplication:
         }
 
     def _model_info(self) -> dict[str, Any]:
-        return {"configured": bool(os.environ.get("LLM_API_KEY", "").strip()),
-                "name": os.environ.get("LLM_MODEL", "").strip() or "未配置"}
+        # 优先环境变量，其次 ~/.randen/config.yaml
+        key = os.environ.get("LLM_API_KEY", "").strip()
+        model = os.environ.get("LLM_MODEL", "").strip()
+        if not key or not model:
+            cfg = self._load_randen_config()
+            if cfg:
+                if not key:
+                    key = str(cfg.get("api_key", "")).strip()
+                if not model:
+                    model = str(cfg.get("model", "")).strip()
+                # 自动注入环境变量，后续 handler 也能用
+                if key and not os.environ.get("LLM_API_KEY"):
+                    os.environ["LLM_API_KEY"] = key
+                if model and not os.environ.get("LLM_MODEL"):
+                    os.environ["LLM_MODEL"] = model
+                if cfg.get("base_url") and not os.environ.get("LLM_BASE_URL"):
+                    os.environ["LLM_BASE_URL"] = str(cfg["base_url"])
+        return {"configured": bool(key), "name": model or "未配置"}
+
+    @staticmethod
+    def _load_randen_config() -> dict[str, Any] | None:
+        config_path = Path.home() / ".randen" / "config.yaml"
+        if not config_path.exists():
+            return None
+        try:
+            import yaml
+            with config_path.open(encoding="utf-8") as f:
+                return yaml.safe_load(f)
+        except Exception:
+            return None
 
     def operation_status(self) -> dict[str, Any]:
         sources_root = self.novel_root / "data" / "sources"
@@ -128,8 +156,10 @@ class StudioApplication:
                     "style_ready": (path / "style").is_dir(),
                     "setting_ready": (path / "setting_profile.md").exists()})
         sync = self.service().sync_status()
-        llm_ok = bool(os.environ.get("LLM_API_KEY", "").strip())
-        llm_name = os.environ.get("LLM_MODEL", "").strip() or "未配置"
+        # 先触发一次 model_info 以自动注入 config 到环境变量
+        mi = self._model_info()
+        llm_ok = mi["configured"]
+        llm_name = mi["name"]
         needs_sync = bool(sync.get("needs_sync"))
         return {"sync": sync, "source_packs": source_packs, "diagnostics": [
             {"name": "项目配置", "ok": self.config_path.is_file() and bool(self.novel_id),
