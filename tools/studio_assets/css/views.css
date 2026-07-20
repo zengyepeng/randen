@@ -783,3 +783,66 @@
 .ed-next:disabled { opacity: .4; cursor: not-allowed; }
 
 .ed-done { padding: 8px 20px; }
+
+/* ═══ Dissect Layout + Dropzone + Book List ═══ */
+.ew-dissect-layout { display: flex; gap: 16px; align-items: flex-start; }
+.ew-dissect-main { flex: 1; min-width: 0; }
+.ew-dissect-sidebar {
+  width: 200px; flex-shrink: 0;
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  padding: 12px; background: var(--surface-subtle);
+}
+.ew-dissect-sidebar h4 { font-size: .82rem; margin: 0 0 8px; }
+.ew-book-list { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; max-height: 240px; overflow-y: auto; }
+.ew-book-list small { font-size: .78rem; }
+
+.ew-book-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 6px; border-radius: var(--radius-sm);
+  background: var(--surface); cursor: pointer;
+  font-size: .78rem; transition: background .12s;
+}
+.ew-book-chip:hover { background: var(--surface-raised); }
+.ew-book-check { display: flex; align-items: center; }
+.ew-book-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ew-book-time { font-size: .7rem; color: var(--text-tertiary); flex-shrink: 0; }
+.ew-book-del {
+  border: none; background: none; color: var(--text-tertiary); cursor: pointer;
+  font-size: .9rem; padding: 0 2px; flex-shrink: 0;
+}
+.ew-book-del:hover { color: #ef4444; }
+
+.ew-run--merge { width: 100%; margin-top: 4px; }
+.ew-run--merge:disabled { opacity: .4; cursor: not-allowed; }
+
+.ew-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px; text-align: center;
+  cursor: pointer; margin-bottom: 10px;
+  transition: border-color .15s, background .15s;
+  background: var(--surface-subtle);
+}
+.ew-dropzone:hover, .ew-dropzone.dragover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-subtle));
+}
+.ew-dropzone span { font-size: .84rem; color: var(--text-secondary); }
+
+.ew-chapter-row {
+  padding: 3px 8px; border-bottom: 1px solid var(--border-subtle);
+  font-size: .78rem; color: var(--text-secondary);
+}
+.ew-chapters { margin-top: 8px; }
+.ew-chapters summary { font-size: .8rem; font-weight: 600; cursor: pointer; }
+
+.ew-merged { border-left: 3px solid var(--accent); padding-left: 12px; }
+.ew-merged h4 { margin: 0 0 8px; font-size: .9rem; }
+
+.ew-tg-tr { background: #ecfdf5; color: #059669; }
+.ew-tg-co { background: #eff6ff; color: #2563eb; }
+
+@media (max-width: 768px) {
+  .ew-dissect-layout { flex-direction: column; }
+  .ew-dissect-sidebar { width: 100%; }
+}

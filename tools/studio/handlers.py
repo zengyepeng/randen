@@ -388,3 +388,30 @@ def handle_faq(app, _params: dict[str, Any] | None = None) -> dict[str, Any]:
     """新人FAQ"""
     from tools.creation_engine import get_faq_for_newcomer
     return {"faq": get_faq_for_newcomer()}
+
+def handle_dissect_deep(app, params: dict[str, Any]) -> dict[str, Any]:
+    """深度拆书（整本）"""
+    from tools.creation_engine import dissect_book_deep
+    text = str(params.get("text") or "")
+    title = str(params.get("title") or "未命名作品")
+    if len(text.strip()) < 100:
+        raise RuntimeError("正文太短，请上传完整作品（建议3000字以上）")
+    return dissect_book_deep(text, title)
+
+
+def handle_dissect_multi(app, params: dict[str, Any]) -> dict[str, Any]:
+    """多书批量拆解"""
+    from tools.creation_engine import dissect_multi_books
+    books = params.get("books", [])
+    if not isinstance(books, list) or len(books) < 1:
+        raise RuntimeError("请至少提供一本书的内容")
+    return dissect_multi_books(books)
+
+
+def handle_merge_dissections(app, params: dict[str, Any]) -> dict[str, Any]:
+    """融合多本书拆解结果"""
+    from tools.creation_engine import merge_dissections
+    results = params.get("results", [])
+    if not isinstance(results, list):
+        raise RuntimeError("请提供拆解结果列表")
+    return merge_dissections(results)

@@ -482,3 +482,140 @@ def main():
 if __name__ == "__main__":
     import sys
     sys.exit(main())
+
+# ── 高级拆书：多本+融合 ─────────────────────────────────────
+
+def dissect_book_deep(text: str, title: str = "未命名作品") -> dict[str, Any]:
+    """深度拆书：在基础分析上增加章节级拆解"""
+    result = dissect_book(text, title)
+    # 按章节分割增强分析
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    chapters: list[dict[str, Any]] = []
+    chapter_buf: list[str] = []
+    chapter_num = 0
+
+    for line in lines:
+        if re.match(r"^(第[一二三四五六七八九十百千\d]+[章回节]|Chapter\s*\d+|ch[._-]?\d+)", line, re.IGNORECASE):
+            if chapter_buf and chapter_num > 0:
+                chapters.append(_analyze_chapter("\n".join(chapter_buf), chapter_num))
+            chapter_num += 1
+            chapter_buf = [line]
+        else:
+            chapter_buf.append(line)
+
+    if chapter_buf and chapter_num > 0:
+        chapters.append(_analyze_chapter("\n".join(chapter_buf), chapter_num))
+
+    result["chapters_analyzed"] = len(chapters)
+    result["chapter_details"] = chapters[:20]  # 最多20章
+    result["type"] = "deep"
+    return result
+
+
+def _analyze_chapter(text: str, num: int) -> dict[str, Any]:
+    """单章分析"""
+    words = len(text)
+    hooks = []
+    if re.search(r"突然|忽然|竟然|没想到|难道|原来", text):
+        hooks.append("转折")
+    if re.search(r"\?[^？]*$", text.strip()[-50:]):
+        hooks.append("悬念结尾")
+    if re.search(r"系统|任务|奖励|惩罚|升级|突破", text):
+        hooks.append("系统驱动")
+    return {
+        "chapter": num,
+        "words": words,
+        "hooks": hooks or ["无明显钩子"],
+        "key_event": _extract_key_event(text),
+    }
+
+
+def _extract_key_event(text: str) -> str:
+    """提取关键事件摘要"""
+    sentences = re.split(r"[。！？]", text)
+    for s in sentences[:10]:
+        s = s.strip()
+        if len(s) > 15 and any(w in s for w in ["发现", "获得", "遇到", "击败", "突破", "觉醒", "触发"]):
+            return s[:60]
+    return "未见明显关键事件"
+
+
+def merge_dissections(books: list[dict[str, Any]]) -> dict[str, Any]:
+    """融合多本书的拆解结果，提取共性"""
+    if not books:
+        return {"error": "请至少提供一本书的拆解结果"}
+    if len(books) < 2:
+        return {"error": "至少需要2本书才能进行融合分析", "single": books[0]}
+
+    # 汇总钩子模式
+    all_hooks: list[str] = []
+    all_gf: list[str] = []
+    all_titles: list[str] = []
+    rhythms: list[str] = []
+    total_words = 0
+
+    for b in books:
+        all_titles.append(b.get("title", "?"))
+        total_words += b.get("estimated_words", 0)
+        for h in (b.get("hooks_detected") or []):
+            if h not in all_hooks:
+                all_hooks.append(h)
+        for g in (b.get("golden_finger_style") or []):
+            if g not in all_gf:
+                all_gf.append(g)
+        rhythms.append(b.get("rhythm", ""))
+
+    # 钩子共性
+    hook_common = [h for h in all_hooks if sum(1 for b in books if h in (b.get("hooks_detected") or [])) >= max(2, len(books) // 2)]
+
+    # 金手指共性
+    gf_common = [g for g in all_gf if sum(1 for b in books if g in (b.get("golden_finger_style") or [])) >= max(2, len(books) // 2)]
+
+    # 节奏统计
+    fast = sum(1 for r in rhythms if "快节奏" in r)
+    mid = sum(1 for r in rhythms if "中等" in r)
+    slow = len(books) - fast - mid
+    dominant_rhythm = "快节奏" if fast >= mid and fast >= slow else "中等节奏" if mid >= fast and mid >= slow else "慢节奏"
+
+    return {
+        "type": "merged",
+        "book_count": len(books),
+        "books": all_titles,
+        "total_words": total_words,
+        "common_hook_patterns": hook_common,
+        "common_golden_fingers": gf_common,
+        "dominant_rhythm": dominant_rhythm,
+        "rhythm_breakdown": f"快:{fast} 中:{mid} 慢:{slow}",
+        "all_hooks": all_hooks,
+        "all_golden_fingers": all_gf,
+        "suggestion": _merge_suggestion(books, hook_common, gf_common, dominant_rhythm),
+    }
+
+
+def _merge_suggestion(books: list[dict], hooks: list[str], gfs: list[str], rhythm: str) -> str:
+    parts = [f"📚 从 {len(books)} 本书中提炼的共性规律：\n"]
+    if hooks:
+        parts.append(f"🎣 共同钩子模式: {'、'.join(hooks)}——这些是最有效的抓读者手段")
+    if gfs:
+        parts.append(f"⚡ 共同金手指类型: {'、'.join(gfs)}——读者验证过的爽点引擎")
+    parts.append(f"🎵 主流节奏: {rhythm}")
+    parts.append(f"\n💡 建议: 在你的作品中至少包含其中 2 种钩子模式 + 1 种金手指类型，并匹配主流节奏。")
+    return "\n".join(parts)
+
+
+# ── 多书批量拆解 ─────────────────────────────────────────────
+
+def dissect_multi_books(books: list[dict[str, str]]) -> dict[str, Any]:
+    """批量拆解多本书"""
+    results = []
+    for b in books:
+        title = b.get("title", "未命名")
+        text = b.get("text", "")
+        if text.strip():
+            results.append(dissect_book_deep(text, title) if len(text) > 5000 else dissect_book(text, title))
+    merged = merge_dissections(results) if len(results) >= 2 else {}
+    return {
+        "individual": results,
+        "count": len(results),
+        "merged": merged,
+    }
