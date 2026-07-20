@@ -54,7 +54,7 @@ description: 'Use when user wants to write novels, manage outlines, characters, 
 
 | 用户意图 | 子技能文件 | 说明 |
 |----------|-----------|------|
-| 写章节 / 续写 / 生成草稿 | [落笔 Agent](./skills/luobi-agent/SKILL.md) | 章节创作 Pipeline：预检→写作→审查→结算 |
+| 写章节 / 续写 / 生成草稿 | [落笔 Agent](./skills/goethe-agent/SKILL.md) | 章节创作 Pipeline：预检→写作→审查→结算 |
 | 审查 / 润色 / 连续性检查 | 同上 | 通过落笔 Agent 统一处理，含 37 维度审计 |
 | 角色 / 大纲 / 世界观 / 伏笔管理 | [项目管理](./skills/novel-manager/SKILL.md) | 项目资产维护 |
 | 风格初始化 / 合成 / 提取 | [风格系统](./skills/style-system/SKILL.md) | 三级风格：技法→来源→作品 |
@@ -65,7 +65,7 @@ description: 'Use when user wants to write novels, manage outlines, characters, 
 | 伏笔 DAG 管理 | [伏笔系统](./skills/foreshadowing-system/SKILL.md) | 伏笔跟踪 |
 | 工作流 / 阶段进度 / 恢复 | [流程管理](./skills/workflow-manager/SKILL.md) | 流程调度 |
 | 切割 / 压缩 / 长文本处理 | [文本处理](./skills/text-processing/SKILL.md) | 文本处理 |
-| 长期规划 / 建书 / 灵感收敛 | [青灯 Agent](./skills/qingdeng-agent/SKILL.md) | 青灯 planning 会话与 handoff |
+| 长期规划 / 建书 / 灵感收敛 | [青灯 Agent](./skills/goethe-agent/SKILL.md) | 青灯 planning 会话与 handoff |
 
 > 原 OpenWrite 中 `novel-creator` 和 `novel-reviewer` 子技能已合并到落笔 Agent。章节创作和审查通过落笔统一入口处理，不再单独拆分。
 

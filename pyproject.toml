@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-studio = ["flask>=3.0"]
+studio = []
 dev = ["pytest>=8.0", "pytest-cov", "ruff"]
 
 [project.scripts]
