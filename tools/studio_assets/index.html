@@ -289,46 +289,113 @@
               </form>
               <p id="create-status" class="form-status" role="status"></p>
             </section>
-            <section class="tool-card tool-card-wide">
-              <div class="subsection-heading"><h2>🏮 创作引擎</h2><span>扫榜→拆书→脑洞→开篇</span></div>
+            <section class="tool-card tool-card-wide engine-section">
+              <div class="subsection-heading">
+                <div>
+                  <h2>🏮 创作引擎</h2>
+                  <p class="section-sub">五集方法论落地：扫榜→拆书→脑洞→开篇，零Token全本地</p>
+                </div>
+              </div>
+              <!-- 流程指示器 -->
+              <div class="engine-flow" aria-label="创作流程四步走">
+                <div class="flow-step active" data-step="1">
+                  <span class="flow-icon">📊</span>
+                  <span class="flow-label">扫榜分析</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step" data-step="2">
+                  <span class="flow-icon">🔍</span>
+                  <span class="flow-label">拆书对标</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step" data-step="3">
+                  <span class="flow-icon">🧠</span>
+                  <span class="flow-label">脑洞完善</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step" data-step="4">
+                  <span class="flow-icon">✍️</span>
+                  <span class="flow-label">开篇诊断</span>
+                </div>
+              </div>
               <div class="engine-grid">
-                <article class="engine-card">
-                  <h3>📊 扫榜分析</h3>
-                  <p>看当下什么赛道流量大、竞争小，帮你选材。</p>
-                  <label>目标平台<select id="engine-platform">
-                    <option value="默认">全平台通用</option>
-                    <option value="番茄小说">番茄小说</option>
-                    <option value="起点中文网">起点中文网</option>
-                    <option value="知乎盐言">知乎盐言</option>
-                  </select></label>
-                  <button id="engine-market" class="primary-button" type="button">开始分析</button>
-                  <pre id="engine-market-result" class="context-preview" hidden></pre>
+                <!-- ① 扫榜分析 -->
+                <article class="engine-card" data-step-color="market">
+                  <div class="engine-card-header">
+                    <span class="engine-step-badge">步骤 1</span>
+                    <h3>📊 扫榜分析</h3>
+                  </div>
+                  <p class="engine-card-desc">选平台看赛道——什么类型流量大、竞争小、新人友好。</p>
+                  <div class="engine-card-body">
+                    <label class="engine-label">目标平台</label>
+                    <select id="engine-platform" class="engine-select">
+                      <option value="默认">🌐 全平台通用</option>
+                      <option value="番茄小说">🍅 番茄小说</option>
+                      <option value="起点中文网">📚 起点中文网</option>
+                      <option value="知乎盐言">📖 知乎盐言</option>
+                    </select>
+                    <button id="engine-market" class="engine-btn" type="button">
+                      <span>开始分析</span>
+                    </button>
+                  </div>
+                  <div id="engine-market-result" class="engine-result" hidden></div>
                 </article>
-                <article class="engine-card">
-                  <h3>🔍 拆书分析</h3>
-                  <p>粘贴一段参考作品，AI 拆解爽点/金手指/钩子。</p>
-                  <textarea id="engine-dissect-text" rows="8" placeholder="粘贴参考作品的正文片段..."></textarea>
-                  <input id="engine-dissect-title" placeholder="作品名（可选）" style="width:100%">
-                  <button id="engine-dissect" class="primary-button" type="button">拆解分析</button>
-                  <pre id="engine-dissect-result" class="context-preview" hidden></pre>
+                <!-- ② 拆书分析 -->
+                <article class="engine-card" data-step-color="dissect">
+                  <div class="engine-card-header">
+                    <span class="engine-step-badge">步骤 2</span>
+                    <h3>🔍 拆书分析</h3>
+                  </div>
+                  <p class="engine-card-desc">粘贴一段参考作品，拆出爽点结构、金手指类型和节奏特征。</p>
+                  <div class="engine-card-body">
+                    <label class="engine-label">作品名（可选）</label>
+                    <input id="engine-dissect-title" class="engine-input" placeholder="如：斗破苍穹 第一章">
+                    <label class="engine-label">正文片段</label>
+                    <textarea id="engine-dissect-text" class="engine-textarea" rows="6" placeholder="粘贴参考作品的正文片段，200字以上效果更佳..."></textarea>
+                    <button id="engine-dissect" class="engine-btn" type="button">
+                      <span>拆解分析</span>
+                    </button>
+                  </div>
+                  <div id="engine-dissect-result" class="engine-result" hidden></div>
                 </article>
-                <article class="engine-card">
-                  <h3>🧠 脑洞完善</h3>
-                  <p>一句话灵感 → 追问澄清 → 完整核心设定。</p>
-                  <textarea id="engine-idea-premise" rows="3" placeholder="写下一句话灵感..."></textarea>
-                  <button id="engine-idea" class="primary-button" type="button">完善脑洞</button>
-                  <pre id="engine-idea-result" class="context-preview" hidden></pre>
+                <!-- ③ 脑洞完善 -->
+                <article class="engine-card" data-step-color="idea">
+                  <div class="engine-card-header">
+                    <span class="engine-step-badge">步骤 3</span>
+                    <h3>🧠 脑洞完善</h3>
+                  </div>
+                  <p class="engine-card-desc">一句话灵感 → 追问澄清 → 完整核心设定（含金手指代价）。</p>
+                  <div class="engine-card-body">
+                    <label class="engine-label">你的灵感</label>
+                    <textarea id="engine-idea-premise" class="engine-textarea" rows="2" placeholder="例：程序员穿越到修真世界，靠写代码修仙..."></textarea>
+                    <button id="engine-idea" class="engine-btn" type="button">
+                      <span>完善脑洞</span>
+                    </button>
+                  </div>
+                  <div id="engine-idea-result" class="engine-result" hidden></div>
                 </article>
-                <article class="engine-card">
-                  <h3>✍️ 开篇诊断</h3>
-                  <p>检查第一章的钩子、节奏、悬念是否到位。</p>
-                  <textarea id="engine-opening-text" rows="8" placeholder="粘贴你的第一章开篇内容..."></textarea>
-                  <button id="engine-opening" class="primary-button" type="button">诊断开篇</button>
-                  <pre id="engine-opening-result" class="context-preview" hidden></pre>
+                <!-- ④ 开篇诊断 -->
+                <article class="engine-card" data-step-color="opening">
+                  <div class="engine-card-header">
+                    <span class="engine-step-badge">步骤 4</span>
+                    <h3>✍️ 开篇诊断</h3>
+                  </div>
+                  <p class="engine-card-desc">7维度检查第一章：钩子·冲突·节奏·情绪·展示·目标·说明。</p>
+                  <div class="engine-card-body">
+                    <label class="engine-label">第一章开篇</label>
+                    <textarea id="engine-opening-text" class="engine-textarea" rows="6" placeholder="粘贴你的第一章开篇内容..."></textarea>
+                    <button id="engine-opening" class="engine-btn" type="button">
+                      <span>诊断开篇</span>
+                    </button>
+                  </div>
+                  <div id="engine-opening-result" class="engine-result" hidden></div>
                 </article>
               </div>
-              <div class="subsection-heading" style="margin-top:20px"><h2>❓ 新人FAQ</h2></div>
-              <div id="engine-faq" class="faq-list"></div>
+              <!-- FAQ -->
+              <div class="engine-faq-section">
+                <h3>💡 新人常见问题（点击查看答案）</h3>
+                <div id="engine-faq" class="faq-grid"></div>
+              </div>
             </section>
             <section class="tool-card tool-card-wide">
               <div class="subsection-heading"><h2>风格与设定来源包</h2><span id="source-count">0</span></div>
