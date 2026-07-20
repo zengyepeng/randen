@@ -4,7 +4,13 @@ import { state } from "../state.js";
 import { $, labels, readinessLabels, formatNumber } from "../utils.js";
 
 export function renderWorkspace() {
-  const { snapshot, model } = state.workspace;
+  const { snapshot, model } = state.workspace || { snapshot: {}, model: {} };
+  if (!snapshot.title) {
+    // Workspace not loaded yet or no project — show defaults
+    const bookTitle = $("#book-title");
+    if (bookTitle && bookTitle.textContent !== "燃灯 Studio") bookTitle.textContent = "燃灯 Studio";
+    return;
+  }
   const bookTitle = $("#book-title");
   const bookLocation = $("#book-location");
   if (bookTitle) bookTitle.textContent = snapshot.title;
