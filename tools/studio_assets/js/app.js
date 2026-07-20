@@ -5,7 +5,7 @@ import { $, $$, showToast, setSaveState } from "./utils.js";
 import { loadWorkspace as loadWorkspaceAPI } from "./api.js";
 import { switchView, openDocument, routeFromLocation } from "./router.js";
 import { renderWorkspace } from "./views/dashboard.js";
-import { initCreationWizard } from "./views/tools.js";
+import { initCreationWizard, initAIAssistants } from "./views/tools.js";
 import { updateEditorCount } from "./views/editor.js";
 import { chooseAgent, appendChatMessage } from "./views/agents.js";
 import { renderContinuity } from "./views/continuity.js";
@@ -31,6 +31,7 @@ async function loadWorkspace() {
   state.workspace = await loadWorkspaceAPI();
   renderWorkspace();
   initCreationWizard();
+  initAIAssistants();
   const app = document.querySelector("#app");
   if (app) app.setAttribute("aria-busy", "false");
   if (!state.workspace.initialized) {

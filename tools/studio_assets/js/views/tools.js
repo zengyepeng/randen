@@ -656,3 +656,83 @@ function _addSaveButton(container, resultType, data, title) {
     } catch(e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
+
+
+/* ═══ AI Assistants (Story/Character/World) ═══ */
+export function initAIAssistants() {
+  const viewConfigs = {
+    story: {
+      tabs: ["story","story","story","story"],
+      actions: [
+        {id:"ai-story-bg", label:"📖 展开背景", action:"background"},
+        {id:"ai-story-outline", label:"📋 生成大纲", action:"outline"},
+        {id:"ai-story-intent", label:"🎯 创作意图", action:"author_intent"},
+        {id:"ai-story-focus", label:"🧭 创作罗盘", action:"current_focus"},
+      ],
+      api: "/api/ai/story"
+    },
+    characters: {
+      tabs: ["characters","characters","characters"],
+      actions: [
+        {id:"ai-char-create", label:"👤 创建角色", action:"create"},
+        {id:"ai-char-dialogue", label:"💬 对话样本", action:"dialogue_sample"},
+        {id:"ai-char-arc", label:"📈 成长弧线", action:"arc"},
+      ],
+      api: "/api/ai/character"
+    },
+    world: {
+      tabs: ["world","world","world","world","world"],
+      actions: [
+        {id:"ai-world-rules", label:"⚖️ 世界规则", action:"rules"},
+        {id:"ai-world-timeline", label:"⏳ 时间线", action:"timeline"},
+        {id:"ai-world-geo", label:"🗺️ 地理", action:"geography"},
+        {id:"ai-world-terms", label:"📖 术语表", action:"terminology"},
+        {id:"ai-world-entity", label:"🏛️ 实体", action:"entity"},
+      ],
+      api: "/api/ai/world"
+    }
+  };
+
+  // Inject AI panels into story/characters/world views
+  Object.entries(viewConfigs).forEach(([viewName, config]) => {
+    // Find the view container
+    const viewsToCheck = config.tabs.map(t => document.querySelector(`[data-view="${t}"]`));
+    // Inject when navigated
+    const observer = new MutationObserver(() => {
+      config.tabs.forEach(tab => {
+        const view = document.getElementById(`${tab}-view`);
+        if (!view || view.querySelector(".ai-panel")) return;
+        const panel = document.createElement("div");
+        panel.className = "ai-panel";
+        panel.innerHTML = `<h3 style="font-size:.9rem;margin:0 0 8px">🤖 AI 辅助</h3>
+          <div class="ai-actions">
+            ${config.actions.map(a => `<button id="${a.id}" class="quiet-button ai-btn" data-ai-action="${a.action}" data-ai-api="${config.api}">${a.label}</button>`).join('')}
+          </div>
+          <pre class="ai-result context-preview" hidden></pre>
+          <input class="engine-input ai-input" placeholder="输入你的想法或已有内容，AI 将基于此生成…" style="width:100%;margin-top:8px">`;
+        view.querySelector(".workspace-view-header")?.after(panel);
+        // Bind buttons
+        panel.querySelectorAll(".ai-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const input = panel.querySelector(".ai-input")?.value || "";
+            const result = panel.querySelector(".ai-result");
+            const action = btn.dataset.aiAction;
+            const api = btn.dataset.aiApi;
+            if (btn) btn.classList.add("active");
+            if (result) { result.hidden = false; result.textContent = "🤖 AI 生成中…"; }
+            try {
+              const res = await fetch(api, {
+                method: "POST", headers: {"Content-Type":"application/json","X-Randen-Studio":"1"},
+                body: JSON.stringify({ action, content: input })
+              });
+              const data = await res.json();
+              if (result) { result.textContent = data.result || data.error || "无结果"; }
+            } catch(e) { if (result) result.textContent = "请求失败: " + (e.message||e); }
+            if (btn) btn.classList.remove("active");
+          });
+        });
+      });
+    });
+    observer.observe(document.querySelector(".main-panel") || document.body, {childList:true,subtree:true});
+  });
+}

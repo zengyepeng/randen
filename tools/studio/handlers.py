@@ -569,3 +569,36 @@ def handle_material_update(app, params):
 def handle_material_delete(app, params):
     from tools.material_library import delete_material
     return delete_material(str(app.project_root), app.novel_id, str(params.get("id", "")))
+
+def handle_ai_story(app, params):
+    from tools.ai_assistants import story_assist
+    action = str(params.get("action", "background"))
+    content = str(params.get("content", ""))
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+        return story_assist(action, content, None, client)
+    except ImportError:
+        return story_assist(action, content)
+
+def handle_ai_character(app, params):
+    from tools.ai_assistants import character_assist
+    action = str(params.get("action", "create"))
+    content = str(params.get("content", ""))
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+        return character_assist(action, content, None, client)
+    except ImportError:
+        return character_assist(action, content)
+
+def handle_ai_world(app, params):
+    from tools.ai_assistants import world_assist
+    action = str(params.get("action", "rules"))
+    content = str(params.get("content", ""))
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+        return world_assist(action, content, None, client)
+    except ImportError:
+        return world_assist(action, content)

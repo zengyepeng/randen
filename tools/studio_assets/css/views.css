@@ -806,3 +806,10 @@
 .mat-editor { margin-top: 4px; }
 .mat-edit-bar { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
 .mat-edit-bar select { width: auto; }
+
+/* AI Assist Panels */
+.ai-panel { margin-top: 20px; }
+.ai-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.ai-btn { font-size: .78rem !important; min-height: 30px !important; }
+.ai-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.ai-result { min-height: 40px; max-height: 360px; overflow-y: auto; }

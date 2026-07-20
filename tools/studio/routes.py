@@ -46,6 +46,9 @@ from .handlers import (
     handle_material_create,
     handle_material_update,
     handle_material_delete,
+    handle_ai_story,
+    handle_ai_character,
+    handle_ai_world,
 )
 
 # (处理器, 是否需要项目已初始化)
@@ -83,6 +86,9 @@ POST_ROUTES: dict[str, tuple[Any, bool]] = {
     "/api/materials":          (handle_material_list,   True),
     "/api/material/create":    (handle_material_create, True),
     "/api/material/update":    (handle_material_update, True),
+    "/api/ai/story":           (handle_ai_story,          True),
+    "/api/ai/character":       (handle_ai_character,      True),
+    "/api/ai/world":           (handle_ai_world,          True),
     "/api/material/delete":    (handle_material_delete, True),
     "/api/write":             (handle_write,           True),
     "/api/review":            (handle_review,          True),
