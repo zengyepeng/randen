@@ -49,6 +49,7 @@ from .handlers import (
     handle_ai_story,
     handle_ai_character,
     handle_ai_world,
+    handle_model_list,
     handle_inspire_apply,
     handle_inspire_vision,
 )
@@ -88,6 +89,7 @@ POST_ROUTES: dict[str, tuple[Any, bool]] = {
     "/api/materials":          (handle_material_list,   True),
     "/api/material/create":    (handle_material_create, True),
     "/api/material/update":    (handle_material_update, True),
+    "/api/model/list":        (handle_model_list,      False),
     "/api/ai/story":           (handle_ai_story,          True),
     "/api/ai/character":       (handle_ai_character,      True),
     "/api/ai/world":           (handle_ai_world,          True),

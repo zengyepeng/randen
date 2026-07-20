@@ -660,6 +660,7 @@ function _addSaveButton(container, resultType, data, title) {
 
 /* ═══ AI Assistants (Story/Character/World) — v2: 事件委托 + 防抖重建 ═══ */
 let _aiCurrentView = null; // track active AI panel view to avoid unnecessary rebuilds
+let _aiAvailableModels = []; // loaded from /api/model/list
 
 export function initAIAssistants() {
   const configs = {
@@ -733,6 +734,7 @@ export function initAIAssistants() {
     const status = $("#ai-panel-status");
     const action = btn.dataset.aiAction;
     const api = btn.dataset.aiApi;
+    const modelId = $("#ai-model-select")?.value || "deepseek-pro";
 
     // Disable all buttons during request
     $$("#ai-panel-buttons .ai-btn").forEach(b => { b.disabled = true; b.classList.add("active"); });
@@ -743,7 +745,7 @@ export function initAIAssistants() {
     try {
       const res = await fetch(api, {
         method: "POST", headers: {"Content-Type":"application/json","X-Randen-Studio":"1"},
-        body: JSON.stringify({ action, content: input })
+        body: JSON.stringify({ action, content: input, model: modelId })
       });
       const data = await res.json();
 
@@ -773,6 +775,9 @@ export function initAIAssistants() {
     const wrap = $("#ai-panel-result-wrap");
     if (wrap) wrap.hidden = true;
   });
+
+  // ── Load available models asynchronously ──
+  _loadModels();
 
   // ── Smart view watcher: only rebuild buttons when view actually changes ──
   const checkAndUpdate = () => {
@@ -809,10 +814,45 @@ export function initAIAssistants() {
 function buildAIPanel(panel, config) {
   panel.hidden = false;
   $("#ai-panel-title").textContent = `🤖 ${config.label}`;
-  $("#ai-panel-buttons").innerHTML = config.actions.map(a =>
+
+  // ── Model selector (loaded async, show dropdown if models available) ──
+  let modelHTML = '';
+  const savedModel = localStorage.getItem(`randen-ai-model-${_aiCurrentView}`) || '';
+  if (_aiAvailableModels.length > 1) {
+    const options = _aiAvailableModels.map(m => {
+      const sel = (savedModel === m.id) || (!savedModel && m.id === 'deepseek-pro');
+      return `<option value="${m.id}" ${sel ? 'selected' : ''}>${m.emoji} ${m.name} · ${m.price}</option>`;
+    }).join('');
+    modelHTML = `<div class="ai-model-row">
+      <span class="ai-model-label">模型：</span>
+      <select id="ai-model-select" class="ai-model-select">${options}</select>
+    </div>`;
+  }
+
+  $("#ai-panel-buttons").innerHTML = modelHTML + config.actions.map(a =>
     `<button class="quiet-button ai-btn" data-ai-action="${a.action}" data-ai-api="${config.api}">${a.label}</button>`
   ).join('');
+
+  // Save model preference on change
+  $("#ai-model-select")?.addEventListener("change", (e) => {
+    localStorage.setItem(`randen-ai-model-${_aiCurrentView}`, e.target.value);
+  });
+
   // Clear previous result
   const wrap = $("#ai-panel-result-wrap");
   if (wrap) wrap.hidden = true;
+}
+
+async function _loadModels() {
+  try {
+    const res = await fetch("/api/model/list", {
+      headers: { "X-Randen-Studio": "1" }
+    });
+    const data = await res.json();
+    if (data.models) {
+      _aiAvailableModels = data.models.filter(m => m.available);
+    }
+  } catch (_) {
+    _aiAvailableModels = [];
+  }
 }

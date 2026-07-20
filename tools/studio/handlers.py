@@ -570,44 +570,104 @@ def handle_material_delete(app, params):
     from tools.material_library import delete_material
     return delete_material(str(app.project_root), app.novel_id, str(params.get("id", "")))
 
-def handle_ai_story(app, params):
-    from tools.ai_assistants import story_assist
-    action = str(params.get("action", "background"))
-    content = str(params.get("content", ""))
+
+# ═══════════════════════════════════════════════════════════════
+# 多模型 AI 助手
+# ═══════════════════════════════════════════════════════════════
+
+AVAILABLE_MODELS = {
+    "deepseek-pro": {
+        "name": "DeepSeek V4 Pro", "emoji": "🧠", "provider": "deepseek",
+        "desc": "最强推理，创意写作首选", "price": "¥1.74/M",
+        "api_key_env": "LLM_API_KEY", "base_url_env": "LLM_BASE_URL",
+        "model_name": "deepseek-chat",
+    },
+    "deepseek-flash": {
+        "name": "DeepSeek V4 Flash", "emoji": "⚡", "provider": "deepseek",
+        "desc": "快速便宜，大纲/草稿", "price": "¥0.14/M",
+        "api_key_env": "LLM_API_KEY", "base_url_env": "LLM_BASE_URL",
+        "model_name": "deepseek-chat",
+    },
+    "glm-flash": {
+        "name": "GLM-4 Flash", "emoji": "🆓", "provider": "zhipu",
+        "desc": "免费模型，日常辅助", "price": "免费",
+        "api_key_env": "ZHIPU_API_KEY", "base_url_env": "ZHIPU_BASE_URL",
+        "model_name": "glm-4-flash",
+    },
+    "glm-flashx": {
+        "name": "GLM-4 FlashX", "emoji": "🎯", "provider": "zhipu",
+        "desc": "性价比高，通用生成", "price": "¥0.1/M",
+        "api_key_env": "ZHIPU_API_KEY", "base_url_env": "ZHIPU_BASE_URL",
+        "model_name": "glm-4-flashx",
+    },
+}
+
+
+def _get_model_config(model_id: str) -> dict:
+    if model_id in AVAILABLE_MODELS:
+        return AVAILABLE_MODELS[model_id]
+    return AVAILABLE_MODELS.get("deepseek-pro", list(AVAILABLE_MODELS.values())[0])
+
+
+def _create_llm_client(model_id: str = None):
+    cfg = _get_model_config(model_id) if model_id else AVAILABLE_MODELS["deepseek-pro"]
+    api_key = os.environ.get(cfg["api_key_env"], "").strip() or os.environ.get("LLM_API_KEY", "").strip()
+    base_url = os.environ.get(cfg["base_url_env"], "").strip() or os.environ.get("LLM_BASE_URL", "https://api.deepseek.com/v1").strip()
     try:
         import openai
-        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
-        return story_assist(action, content, None, client)
+        if not api_key:
+            return None, cfg
+        return openai.OpenAI(api_key=api_key, base_url=base_url), cfg
     except ImportError:
-        return story_assist(action, content)
-    except Exception as e:
-        return story_assist(action, content)  # 降级到本地模式
+        return None, cfg
+
+
+def handle_model_list(app, params=None):
+    models = []
+    for mid, cfg in AVAILABLE_MODELS.items():
+        has_key = bool(os.environ.get(cfg["api_key_env"], "").strip() or os.environ.get("LLM_API_KEY", "").strip())
+        models.append({
+            "id": mid, "name": cfg["name"], "emoji": cfg["emoji"],
+            "desc": cfg["desc"], "price": cfg["price"], "available": has_key,
+        })
+    return {"models": models, "default": "deepseek-pro"}
+
+
+def _do_ai_call(assist_fn, action, content, model_id):
+    """通用 AI 调用包装"""
+    try:
+        client, cfg = _create_llm_client(model_id)
+        if not client:
+            return assist_fn(action, content)
+        result = assist_fn(action, content, None, client)
+        result["model_used"] = cfg["name"]
+        return result
+    except (ImportError, Exception):
+        return assist_fn(action, content)
+
+
+def handle_ai_story(app, params):
+    from tools.ai_assistants import story_assist
+    return _do_ai_call(story_assist,
+                       str(params.get("action", "background")),
+                       str(params.get("content", "")),
+                       str(params.get("model", "") or "deepseek-pro"))
+
 
 def handle_ai_character(app, params):
     from tools.ai_assistants import character_assist
-    action = str(params.get("action", "create"))
-    content = str(params.get("content", ""))
-    try:
-        import openai
-        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
-        return character_assist(action, content, None, client)
-    except ImportError:
-        return character_assist(action, content)
-    except Exception as e:
-        return character_assist(action, content)  # 降级到本地模式
+    return _do_ai_call(character_assist,
+                       str(params.get("action", "create")),
+                       str(params.get("content", "")),
+                       str(params.get("model", "") or "deepseek-pro"))
+
 
 def handle_ai_world(app, params):
     from tools.ai_assistants import world_assist
-    action = str(params.get("action", "rules"))
-    content = str(params.get("content", ""))
-    try:
-        import openai
-        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
-        return world_assist(action, content, None, client)
-    except ImportError:
-        return world_assist(action, content)
-    except Exception as e:
-        return world_assist(action, content)  # 降级到本地模式
+    return _do_ai_call(world_assist,
+                       str(params.get("action", "rules")),
+                       str(params.get("content", "")),
+                       str(params.get("model", "") or "deepseek-pro"))
 
 
 # ═══════════════════════════════════════════════════════════════

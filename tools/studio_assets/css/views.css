@@ -840,6 +840,24 @@
   font-size: .8rem; line-height: 1.6; padding: 10px 12px;
 }
 
+/* ── Model selector ── */
+.ai-model-row {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+  padding: 4px 0;
+}
+.ai-model-label {
+  font-size: .75rem; color: var(--text-tertiary); white-space: nowrap;
+}
+.ai-model-select {
+  font-size: .75rem; padding: 4px 8px; border-radius: 6px;
+  border: 1px solid var(--border-subtle); background: var(--surface);
+  color: var(--text); cursor: pointer; flex: 1; max-width: 280px;
+  transition: border-color .2s;
+}
+.ai-model-select:hover, .ai-model-select:focus {
+  border-color: var(--accent); outline: none;
+}
+
 /* ── Chat container ── */
 .chat-log { position: relative; }
 
