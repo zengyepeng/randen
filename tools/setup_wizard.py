@@ -329,9 +329,50 @@ def run_setup_wizard() -> int:
         style="info" if console else "info",
     )
 
-    import getpass
-    _print("  API Key（盲打即可，输入内容不会显示）")
-    api_key = getpass.getpass("  API Key: ").strip()
+    # API Key 输入：优先用 Rich 显示 *，降级到自定义 getpass（echo *），最后用明文
+    api_key = ""
+    if Prompt is not None:
+        try:
+            api_key = Prompt.ask("  API Key", password=True).strip()
+        except Exception:
+            # Rich password 在某些终端不兼容，降级到自定义方案
+            pass
+
+    if not api_key:
+        # 自定义 getpass：逐字符读入，回显 *
+        try:
+            import sys as _sys
+            if _sys.platform != "win32":
+                import termios, tty
+                _print("  API Key: ", style="prompt" if _print is _plain_print else None)
+                _sys.stdout.write("  API Key: ")
+                _sys.stdout.flush()
+                fd = _sys.stdin.fileno()
+                old = termios.tcgetattr(fd)
+                try:
+                    tty.setraw(fd)
+                    chars = []
+                    while True:
+                        ch = _sys.stdin.read(1)
+                        if ch in ("\n", "\r"):
+                            _sys.stdout.write("\n")
+                            break
+                        if ch == "\x7f":  # backspace
+                            if chars:
+                                chars.pop()
+                                _sys.stdout.write("\b \b")
+                        else:
+                            chars.append(ch)
+                            _sys.stdout.write("*")
+                        _sys.stdout.flush()
+                    api_key = "".join(chars).strip()
+                finally:
+                    termios.tcsetattr(fd, termios.TCSADRAIN, old)
+            else:
+                # Windows 回退到明文（Windows 的 getpass 也不显示 *）
+                api_key = input("  API Key (明文): ").strip()
+        except Exception:
+            api_key = input("  API Key (明文): ").strip()
 
     if not api_key:
         _print("[yellow]⚠ Key 为空，后续将无法调用 AI。可用 randen setup 重新配置。[/]", style="warn")
