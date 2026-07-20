@@ -52,6 +52,14 @@ from .handlers import (
     handle_model_list,
     handle_inspire_apply,
     handle_inspire_vision,
+    handle_sanitize,
+    handle_negotiate,
+    handle_redraw,
+    handle_cross_domain,
+    handle_adapt_drama,
+    handle_scene_engine,
+    handle_iron_rules,
+    handle_material_tagger,
 )
 
 # (处理器, 是否需要项目已初始化)
@@ -100,6 +108,9 @@ POST_ROUTES: dict[str, tuple[Any, bool]] = {
     "/api/redraw":            (handle_redraw,           False),
     "/api/cross-domain":      (handle_cross_domain,     False),
     "/api/adapt-drama":       (handle_adapt_drama,      False),
+    "/api/scene-engine":      (handle_scene_engine,     False),
+    "/api/iron-rules":        (handle_iron_rules,       False),
+    "/api/material-tagger":   (handle_material_tagger,  False),
     "/api/material/delete":    (handle_material_delete, True),
     "/api/write":             (handle_write,           True),
     "/api/review":            (handle_review,          True),

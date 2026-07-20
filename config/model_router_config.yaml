@@ -1,0 +1,125 @@
+# 燃灯 — 多模型混合路由调度配置
+# v6.0 规格书 Module 1.2
+# 不同环节对模型智商/成本要求不同，通过配置实现极致性价比
+
+tasks:
+  # 卷宗大纲规划 — 智商高，管大纲
+  volume_planner:
+    model: "deepseek-pro"
+    fallback: "deepseek-flash"
+    temperature: 0.4
+    max_tokens: 2000
+    note: "大纲决定全局走向，用最强模型"
+
+  # 章节大纲细化 — 需要结构化输出
+  chapter_outliner:
+    model: "deepseek-pro"
+    fallback: "glm-flashx"
+    temperature: 0.5
+    max_tokens: 1500
+
+  # 场景路由分类 — 便宜快，分类任务
+  scene_router:
+    model: "deepseek-flash"
+    fallback: "glm-flash"
+    temperature: 0.1
+    max_tokens: 200
+
+  # 正文生成 — 中文性价比之王
+  state_machine_writer:
+    model: "deepseek-pro"
+    fallback: "deepseek-flash"
+    temperature: 0.7
+    max_tokens: 8000
+
+  # 对话生成 — 需要创意和个性
+  dialogue_generator:
+    model: "deepseek-pro"
+    fallback: "glm-flashx"
+    temperature: 0.8
+    max_tokens: 3000
+
+  # 多Agent谈判模拟 — 复杂推理
+  negotiator:
+    model: "deepseek-pro"
+    fallback: "glm-flashx"
+    temperature: 0.8
+    max_tokens: 2000
+
+  # 脱敏精修 — 关键输出质量
+  sanitizer:
+    model: "deepseek-pro"
+    fallback: "deepseek-flash"
+    temperature: 0.7
+    max_tokens: 8000
+
+  # 风格指纹提取 — 需要精确分析
+  style_extractor:
+    model: "deepseek-pro"
+    fallback: "deepseek-flash"
+    temperature: 0.2
+    max_tokens: 3000
+
+  # 跨领域类比 — 创意发散
+  cross_domain:
+    model: "deepseek-pro"
+    fallback: "glm-flashx"
+    temperature: 0.8
+    max_tokens: 1200
+
+  # 素材打标 — 简单分类任务
+  material_tagger:
+    model: "deepseek-flash"
+    fallback: "glm-flash"
+    temperature: 0.1
+    max_tokens: 500
+
+  # 短剧改编 — 内容转换
+  drama_adaptor:
+    model: "deepseek-pro"
+    fallback: "deepseek-flash"
+    temperature: 0.7
+    max_tokens: 4000
+
+  # 局部重绘 — 精准替换
+  redrawer:
+    model: "deepseek-pro"
+    fallback: "deepseek-flash"
+    temperature: 0.8
+    max_tokens: 2000
+
+  # 原创性检测 — 审查任务
+  originality_check:
+    model: "deepseek-flash"
+    fallback: "glm-flash"
+    temperature: 0.2
+    max_tokens: 800
+
+  # 情感注入 — 创意润色
+  emotion_injector:
+    model: "deepseek-pro"
+    fallback: "glm-flashx"
+    temperature: 0.7
+    max_tokens: 1000
+
+  # 剧情分叉 — 创意发散
+  branch_selector:
+    model: "deepseek-pro"
+    fallback: "glm-flashx"
+    temperature: 0.8
+    max_tokens: 1500
+
+  # 爆款包装 — 营销创意
+  hit_packager:
+    model: "deepseek-pro"
+    fallback: "deepseek-flash"
+    temperature: 0.9
+    max_tokens: 1500
+
+# 默认路由规则
+defaults:
+  creative_writing: "deepseek-pro"      # 需要创造力的用 Pro
+  classification: "deepseek-flash"      # 分类/打标用 Flash
+  draft_generation: "deepseek-flash"    # 草稿/批量用 Flash
+  quality_check: "deepseek-flash"       # 检查类用 Flash
+  free_tasks: "glm-flash"              # 不花钱的用 GLM

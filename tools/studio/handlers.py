@@ -970,3 +970,101 @@ def handle_adapt_drama(app, params):
         return adapt_chapter_to_drama(text, title, episodes, client)
     except (ImportError, Exception):
         return adapt_chapter_to_drama(text, title, episodes)
+
+
+# ═══════════════════════════════════════════════════════════════
+# v6.0 扩展能力处理函数
+# ═══════════════════════════════════════════════════════════════
+
+def handle_scene_engine(app, params):
+    """场景引擎：大纲细化/场景路由/情感注入"""
+    from tools.scene_chapter_engine import (
+        refine_chapter_outline, route_scene, classify_text_scene,
+        inject_emotion, inject_emotion_chain,
+    )
+    action = str(params.get("action", "outline"))
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+    except (ImportError, Exception):
+        client = None
+
+    if action == "outline":
+        return refine_chapter_outline(
+            str(params.get("volume_outline", "")),
+            int(params.get("chapter_num", 1)),
+            str(params.get("previous_summary", "")),
+            int(params.get("target_words", 3000)),
+            str(params.get("pacing", "")),
+            client,
+        )
+    elif action == "route":
+        return route_scene(params)
+    elif action == "classify":
+        return classify_text_scene(str(params.get("text", "")))
+    elif action == "emotion":
+        return inject_emotion(
+            str(params.get("text", "")),
+            str(params.get("emotion", "愤怒")),
+            int(params.get("intensity", 7)),
+            client,
+        )
+    elif action == "emotion_chain":
+        return inject_emotion_chain(
+            str(params.get("text", "")),
+            params.get("sequence", [["紧张", 3], ["惊喜", 7], ["愤怒", 9]]),
+            client,
+        )
+    return {"error": "未知操作"}
+
+
+def handle_iron_rules(app, params):
+    """写作铁律编译"""
+    from tools.writing_iron_rules import compile_iron_rules, compile_system_prompt, entity_lock_prompt
+    action = str(params.get("action", "rules"))
+    project_root = app.project_root if hasattr(app, 'project_root') else Path(os.getcwd())
+    if action == "system_prompt":
+        return {"prompt": compile_system_prompt(project_root, include_rules=True, include_style=True)}
+    elif action == "entity_lock":
+        return {"prompt": entity_lock_prompt(project_root)}
+    return {"rules": compile_iron_rules(project_root)}
+
+
+def handle_material_tagger(app, params):
+    """素材打标 + RAG检索 + 剧情分叉"""
+    from tools.material_branch_rag import (
+        structure_material, batch_structure_materials,
+        generate_branches, rag_retrieve, rag_inject_into_prompt,
+    )
+    action = str(params.get("action", "tag"))
+    try:
+        import openai
+        client = openai.OpenAI(api_key=os.environ.get("LLM_API_KEY",""),base_url=os.environ.get("LLM_BASE_URL","https://api.deepseek.com/v1"))
+    except (ImportError, Exception):
+        client = None
+
+    if action == "tag":
+        return structure_material(str(params.get("text", "")), params.get("tags"), client)
+    elif action == "batch_tag":
+        return {"results": batch_structure_materials(params.get("texts", []), client)}
+    elif action == "branches":
+        return generate_branches(
+            str(params.get("situation", "")),
+            str(params.get("character_state", "")),
+            str(params.get("foreshadowing", "")),
+            str(params.get("preference", "")),
+            client,
+        )
+    elif action == "rag":
+        return rag_retrieve(
+            str(params.get("query", "")),
+            params.get("materials", []),
+            int(params.get("top_k", 5)),
+        )
+    elif action == "rag_inject":
+        return {"prompt": rag_inject_into_prompt(
+            str(params.get("query", "")),
+            params.get("materials", []),
+            int(params.get("top_k", 3)),
+        )}
+    return {"error": "未知操作"}
