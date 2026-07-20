@@ -115,6 +115,47 @@ GENRE_GUIDES = {
             "✅ 系统有明确的功能范围 + 使用限制 + 代价",
         ],
     },
+    "重生穿越": {
+        "key_question": "主角重生/穿越的契机是什么？这一世要改变的核心事件是什么？",
+        "golden_finger_examples": [
+            "先知记忆（知道未来走向，但蝴蝶效应让熟悉的历史逐渐偏离）",
+            "前世的技能/知识（程序员穿越修真界、医生穿越古代、电商运营穿越异世）",
+            "系统辅助（签到系统、任务系统配合重生信息差）",
+        ],
+        "pitfalls": [
+            "❌ 重生后一帆风顺 → 读者没有紧张感",
+            "❌ 完全按前世轨迹走 → 少了惊喜",
+            "✅ 预设'蝴蝶效应'——主角的每个改变都带来意想不到的连锁反应",
+            "✅ 设一个'必须阻止'的事件作为主线锚点",
+        ],
+    },
+    "都市系统流": {
+        "key_question": "系统在城市背景下能做什么别人做不了的事？",
+        "golden_finger_examples": [
+            "每日签到系统（社畜逆袭、学生翻身）",
+            "技能面板系统（从打工人到全能大神）",
+            "反套路系统（在预期处反转的都市爽文）",
+        ],
+        "pitfalls": [
+            "❌ 系统太万能 → 失去真实感",
+            "❌ 只写打脸爽不加人物成长 → 30章后疲劳",
+            "✅ 系统有明确的成长曲线和阶段限制",
+        ],
+    },
+    "种田流/基建流": {
+        "key_question": "主角要建造什么？这个建造过程的独特乐趣是什么？",
+        "golden_finger_examples": [
+            "农业系统（改良种子、加速生长、增产增收）",
+            "建造系统（从茅草屋到城池，步步升级）",
+            "经营系统（经营店铺、领地、国家，数据化爽感）",
+        ],
+        "pitfalls": [
+            "❌ 只写种田没有冲突 → 读者无聊",
+            "❌ 建造过程没有阻力 → 缺少成就感",
+            "✅ 每阶段设定一个外部威胁或资源瓶颈",
+            "✅ 展示建造成果的视觉化对比（前后变化）",
+        ],
+    },
     "规则怪谈": {
         "key_question": "核心规则是什么？违反规则的后果是什么？",
         "golden_finger_examples": [
@@ -145,20 +186,20 @@ GENRE_GUIDES = {
 
 # 开篇诊断清单
 OPENING_CHECKLIST = [
-    ("hook", "第一段/第一句是不是有钩子？读者为什么想翻下一页？",
-     "开篇没有钩子。建议：第一段用一个反常事件、对话或悬念开头。"),
-    ("conflict", "第一章结尾有没有留下一个必须解答的问题？",
-     "章末没留悬念。建议：每章结尾让读者至少有一个'然后呢？'的冲动。"),
-    ("exposition", "开篇前300字有没有大段背景介绍/世界观说明？",
-     "开篇有大段说明性文字。建议：把世界观融入角色动作和对话中，不要单独介绍。"),
-    ("character_goal", "第一章里读者能不能清楚地知道主角想要什么？",
-     "主角目标不明确。建议：前500字内让主角表达一个具体的、有障碍的愿望。"),
-    ("emotion", "开篇有没有一个情绪锚点（愤怒/好奇/紧张/共鸣）？",
-     "缺少情绪锚点。建议：在开篇营造一个明确的情绪——让读者好奇、愤怒或共鸣。"),
-    ("rhythm", "第一章有没有至少一次节奏变化（快→慢 或 慢→快）？",
-     "节奏太平。建议：开篇用快节奏建立紧张感，然后插入一个小停顿给读者喘息。"),
-    ("showing", "有没有用'展示'代替'告知'的段落？",
-     "过多'告知'而非'展示'。建议：用角色的行动和选择来表达设定，而非旁白说明。"),
+    ("hook", "第一句话能不能勾住读者？",
+     "读者打开了你的书，第一句话看完——他有没有产生'然后呢？'的冲动？如果没有，试试用对话或反常事件开头。"),
+    ("conflict", "章末有没有让人抓心挠肝的悬念？",
+     "读者翻到章末最后一句话——他是不是立刻想点下一章？如果不是，加一个小反转、一个未解答的问题、或者一个突发危机。"),
+    ("exposition", "开篇有没有大段'说明书'？",
+     "你前300字是不是在介绍'这个世界分为三大洲五大势力……'？读者不想看说明书，他们想感受。把设定藏进角色的动作和对话里。"),
+    ("character_goal", "主角到底想要什么？",
+     "读者看完前500字，能不能说清楚'这个主角想要什么'？如果不能，让主角在开头就表现出一个具体的、有障碍的愿望。"),
+    ("emotion", "开篇有没有让人有感觉？",
+     "你的第一章让读者感觉到了什么？好奇？紧张？心疼？愤怒？如果什么感觉都没有，那就只是在读流水账。选一个情绪，在开头就砸给读者。"),
+    ("rhythm", "节奏有没有变化？",
+     "从头到尾一个速度=无聊。试试：紧张的场景写短句（10字以内），舒缓的场景写长句——读者的大脑需要节奏来保持注意力。"),
+    ("showing", "有没有让读者'看见'而不是'被告知'？",
+     "不要说'他很愤怒'，写他'一拳砸碎了桌上的杯子'。不要告诉读者世界规则，让他们从角色的遭遇里自己悟出来。"),
 ]
 
 
@@ -495,7 +536,7 @@ def dissect_book_deep(text: str, title: str = "未命名作品") -> dict[str, An
     chapter_num = 0
 
     for line in lines:
-        if re.match(r"^(第[一二三四五六七八九十百千\d]+[章回节]|Chapter\s*\d+|ch[._-]?\d+)", line, re.IGNORECASE):
+        if re.match(r"^(第[一二三四五六七八九十百千\d]+[章回节卷]|Chapter\s*\d+|Ch\.?\s*\d+|Vol\.?\s*\d+\s*Ch|^\d+[\.\-、]\s|^0?\d+[\s\.]|[Cc][Hh]\s*\d+)", line, re.IGNORECASE):
             if chapter_buf and chapter_num > 0:
                 chapters.append(_analyze_chapter("\n".join(chapter_buf), chapter_num))
             chapter_num += 1
@@ -588,9 +629,40 @@ def merge_dissections(books: list[dict[str, Any]]) -> dict[str, Any]:
         "rhythm_breakdown": f"快:{fast} 中:{mid} 慢:{slow}",
         "all_hooks": all_hooks,
         "all_golden_fingers": all_gf,
+        "differences": _diff_analysis(books),
         "suggestion": _merge_suggestion(books, hook_common, gf_common, dominant_rhythm),
     }
 
+
+
+def _diff_analysis(books: list[dict]) -> list[dict]:
+    """差异化分析：每本书的独特卖点"""
+    diffs = []
+    for b in books:
+        title = b.get("title", "?")
+        unique_hooks = [h for h in (b.get("hooks_detected") or []) 
+                       if sum(1 for o in books if o != b and h in (o.get("hooks_detected") or [])) == 0]
+        unique_gf = [g for g in (b.get("golden_finger_style") or [])
+                    if sum(1 for o in books if o != b and g in (o.get("golden_finger_style") or [])) == 0]
+        diffs.append({
+            "title": title,
+            "unique_hooks": unique_hooks,
+            "unique_golden_fingers": unique_gf,
+            "words": b.get("estimated_words", 0),
+            "target": _suggest_target(title, b),
+        })
+    return diffs
+
+
+def _suggest_target(title: str, book: dict) -> str:
+    """根据拆解结果建议目标读者"""
+    hooks = book.get("hooks_detected", [])
+    rhythm = book.get("rhythm", "")
+    if "系统流" in str(hooks): return "喜欢升级打怪爽文的男性读者（18-30岁）"
+    if "规则" in title.lower(): return "喜欢烧脑解谜、对猎奇题材感兴趣的年轻读者"
+    if "重生" in title or "穿越" in title: return "喜欢爽文节奏、对'逆袭改变人生'有共鸣的读者"
+    if "快节奏" in rhythm: return "喜欢快节奏、碎片化阅读的手机用户"
+    return "对快节奏网文有阅读习惯的年轻读者"
 
 def _merge_suggestion(books: list[dict], hooks: list[str], gfs: list[str], rhythm: str) -> str:
     parts = [f"📚 从 {len(books)} 本书中提炼的共性规律：\n"]

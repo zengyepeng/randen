@@ -232,7 +232,7 @@ function _initMergeButton() {
   ${data.common_golden_fingers?.length ? `<p>⚡ 共性金手指: ${data.common_golden_fingers.map(_esc).join("、")}</p>` : ""}
   <p>🎵 主导节奏: ${_esc(data.dominant_rhythm)} (${_esc(data.rhythm_breakdown)})</p>
   <p class="ew-tip">${_esc(data.suggestion)}</p>
-</div>`;
+</div>${_diffSection(data.differences)}`;
     } catch (e) { if (out) _ewErr(out, e); }
     if (btn) btn.disabled = false;
   });
