@@ -134,14 +134,23 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             self._require_write_header()
             route = urlparse(self.path).path
 
-            # EPUB: raw binary body, not JSON
-            if route == "/api/epub":
+            # EPUB + large dissect: raw body bypass JSON
+            if route in ("/api/epub", "/api/dissect", "/api/dissect/deep"):
                 length = int(self.headers.get("Content-Length", 0))
                 raw = self.rfile.read(length)
-                from tools.creation_engine import extract_text_from_epub
-                result = extract_text_from_epub(raw, is_bytes=True)
-                self._json(result)
-                return
+                if route == "/api/epub":
+                    from tools.creation_engine import extract_text_from_epub
+                    self._json(extract_text_from_epub(raw, is_bytes=True))
+                    return
+                else:
+                    text = raw.decode("utf-8", errors="replace")
+                    if route == "/api/dissect/deep":
+                        from tools.creation_engine import dissect_book_deep
+                        self._json(dissect_book_deep(text, ""))
+                    else:
+                        from tools.creation_engine import dissect_book
+                        self._json(dissect_book(text, ""))
+                    return
 
             handler, needs_project = POST_ROUTES.get(route, (None, False))
             if handler is None:

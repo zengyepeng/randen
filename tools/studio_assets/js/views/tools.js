@@ -347,15 +347,22 @@ function _initFileUpload() {
 
   $("#ew-dissect-new")?.addEventListener("click", async () => {
     const text = textarea?.value || "";
-    const title = $("#ew-dissect-title")?.value || "";
+    const title = $("#ew-dissect-title")?.value || "未命名";
     const out = $("#ew-dissect-out");
     if (text.length < 100) { if (out) _ewErr(out, new Error("请先粘贴或拖拽上传正文内容")); return; }
     const btn = $("#ew-dissect-new");
     if (btn) btn.disabled = true;
     if (out) { out.hidden = false; out.textContent = "正在拆解整本书…"; }
     try {
-      const data = await _ewPost("/api/dissect/deep", { text, title: title || "未命名" });
-      _ewBooks.push({ title: title || "未命名", result: data, time: new Date().toLocaleTimeString() });
+      // Send as raw text to avoid JSON body size limit
+      const res = await fetch("/api/dissect/deep", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain; charset=utf-8", "X-Randen-Studio": "1" },
+        body: text
+      });
+      if (!res.ok) throw new Error((await res.json().catch(()=>({error:"请求失败"}))).error||"请求失败");
+      const data = await res.json();
+      _ewBooks.push({ title: title, result: data, time: new Date().toLocaleTimeString() });
       _saveBooksToStorage();
       if (out) _showDissectResult(out, data);
       _renderBookList();
