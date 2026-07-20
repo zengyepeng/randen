@@ -303,3 +303,16 @@
 .mobile-only {
   display: none;
 }
+
+/* ── Nav Group Labels ── */
+.nav-group-label {
+  padding: 16px 10px 4px 14px;
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  user-select: none;
+}
+
+.nav-group-label:first-of-type { padding-top: 8px; }
