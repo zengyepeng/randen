@@ -330,10 +330,11 @@ def run_setup_wizard() -> int:
     )
 
     if Prompt is not None:
+        _print("  API Key（输入时光标不动是正常的，盲打即可）")
         api_key = Prompt.ask("  API Key", password=True).strip()
     else:
         import getpass
-        api_key = getpass.getpass("  API Key: ").strip()
+        api_key = getpass.getpass("  API Key（输入不可见，正常现象）: ").strip()
 
     if not api_key:
         _print("[yellow]⚠ Key 为空，后续将无法调用 AI。可用 randen setup 重新配置。[/]", style="warn")
