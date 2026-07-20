@@ -225,7 +225,79 @@ export function initCreationWizard() {
     if (out && !out.hidden && genBtn) { genBtn.hidden = false; clearInterval(ideaCheck); }
   }, 500);
 
-  loadFAQIntoWizard();
+
+  // Load persona template on step 6
+  async function loadPersonaForm() {
+    const root = $("#ew-persona-form");
+    if (!root) return;
+    try {
+      const data = await _ewPost("/api/persona/template", {});
+      const dims = data.dimensions;
+      let html = "";
+      Object.entries(dims).forEach(([key, dim]) => {
+        html += `<fieldset class="ew-persona-dim"><legend>${dim.label}</legend>`;
+        Object.entries(dim.fields).forEach(([fkey, field]) => {
+          const name = `persona_${key}_${fkey}`;
+          if (field.type === "select") {
+            html += `<label>${field.label}<select class="ew-input" id="${name}">`;
+            (field.options||[]).forEach(opt => html += `<option>${opt}</option>`);
+            html += '</select></label>';
+          } else if (field.type === "number") {
+            html += `<label>${field.label}<input class="ew-input" id="${name}" type="number" placeholder="${field.placeholder||''}"></label>`;
+          } else {
+            html += `<label>${field.label}<input class="ew-input" id="${name}" placeholder="${field.placeholder||''}"></label>`;
+          }
+        });
+        html += "</fieldset>";
+      });
+      html += '<p style="font-size:.78rem;color:var(--text-secondary);margin-top:8px">' + data.tips.map(t => "💡 " + t).join("<br>") + '</p>';
+      root.innerHTML = html;
+
+      // Load existing if any
+      try {
+        const existing = await _ewPost("/api/persona/load", {});
+        if (existing.loaded && existing.data) {
+          Object.entries(existing.data).forEach(([key, dim]) => {
+            if (typeof dim === "object") {
+              Object.entries(dim).forEach(([fkey, val]) => {
+                const el = document.getElementById(`persona_${key}_${fkey}`);
+                if (el && val) el.value = val;
+              });
+            }
+          });
+        }
+      } catch(_) {}
+    } catch(e) { root.innerHTML = "<small>加载失败</small>"; }
+  }
+
+  // Save persona
+  $("#ew-persona-save")?.addEventListener("click", async () => {
+    const dims = ['identity','creative_domain','language','rhythm','characters','emotion','ambition','boundaries'];
+    const persona = {};
+    dims.forEach(dimKey => {
+      persona[dimKey] = {};
+      document.querySelectorAll(`[id^="persona_${dimKey}_"]`).forEach(el => {
+        const fkey = el.id.replace(`persona_${dimKey}_`, '');
+        if (el.value) persona[dimKey][fkey] = el.value;
+      });
+    });
+    const btn = $("#ew-persona-save");
+    if (btn) { btn.disabled = true; btn.textContent = "保存中..."; }
+    try {
+      const data = await _ewPost("/api/persona/save", { persona });
+      if (btn) { btn.textContent = "✅ 已保存"; }
+      _addSaveButton(document.getElementById("ew-persona-form"), "persona", persona, "作者人设");
+    } catch(e) { if (btn) { btn.textContent = "⚠ 失败"; btn.disabled = false; } }
+  });
+
+  // Load persona when step 6 is shown
+  const personaObserver = new MutationObserver(() => {
+    const step6 = document.querySelector('.ed-step[data-step="6"].active');
+    if (step6 && step6.querySelector('.ew-persona-loading')) loadPersonaForm();
+  });
+  personaObserver.observe(document.querySelector('.ed-body'), { attributes: false, childList: true, subtree: true });
+  loadPersonaForm();
+
 }
 
 /* ── 文件上传 ── */

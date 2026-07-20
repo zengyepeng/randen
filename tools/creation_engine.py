@@ -1066,3 +1066,145 @@ def ai_style_imitate(reference_text: str, premise: str, style: str = "", llm_cli
         return {"ok": True, "generated_text": content.strip(), "style": style or "参考风格"}
     except Exception as e:
         return {"error": f"仿写失败: {str(e)[:100]}"}
+
+# ── 作者人设系统 ────────────────────────────────────────────
+
+AUTHOR_PERSONA_DIMENSIONS = {
+    "identity": {
+        "label": "① 我是谁",
+        "fields": {
+            "pen_name": {"label": "笔名/代号", "placeholder": "如：荒野小说家"},
+            "author_type": {"label": "我是哪种作者", "placeholder": "讲故事的人 / 世界建筑师 / 情感挖掘者 / 思想实验者", "type": "select", "options": ["讲故事的人", "世界建筑师", "情感挖掘者", "思想实验者"]},
+            "manifesto": {"label": "一句话创作宣言", "placeholder": "如：我想写让读者半夜睡不着觉的故事"},
+        }
+    },
+    "creative_domain": {
+        "label": "② 我写什么",
+        "fields": {
+            "primary_genre": {"label": "主类型", "placeholder": "都市 / 玄幻 / 科幻 / 悬疑 / 言情"},
+            "eternal_themes": {"label": "我永远写不腻的主题", "placeholder": "如：孤独、权力与人性、命运的反叛"},
+            "tropes_i_hate": {"label": "我绝不会用的套路", "placeholder": "如：无脑倒贴、系统万能、强行降智"},
+        }
+    },
+    "language": {
+        "label": "③ 我的语言习惯",
+        "fields": {
+            "sentence_style": {"label": "句式偏好", "placeholder": "短句为主 / 绵长细腻 / 干净克制", "type": "select", "options": ["短句为主，偶尔长句", "绵长细腻，娓娓道来", "干净克制，惜字如金", "多变，视场景而定"]},
+            "dialogue_style": {"label": "对话风格", "placeholder": "短对话+潜台词 / 机锋交锋 / 长段独白", "type": "select", "options": ["短对话+大量潜台词", "机锋交锋，言语较量", "长段独白，直抒胸臆", "各角色说话风格完全不同"]},
+            "forbidden_words": {"label": "禁用词/句式", "placeholder": "如：突然、只见、他的眼中闪过一丝"},
+            "narrative_voice": {"label": "叙述语气", "placeholder": "悲悯 / 讽刺 / 热血 / 冷峻 / 幽默", "type": "select", "options": ["悲悯", "讽刺", "热血", "冷峻", "幽默", "温暖"]},
+        }
+    },
+    "rhythm": {
+        "label": "④ 我的节奏",
+        "fields": {
+            "chapter_words": {"label": "每章目标字数", "placeholder": "如：3000", "type": "number"},
+            "closing_style": {"label": "章尾风格", "placeholder": "悬念钩子 / 情感余韵 / 戛然而止", "type": "select", "options": ["悬念钩子（让读者想翻页）", "情感余韵（不说话，让读者感受）", "戛然而止（突然断在关键时刻）", "行动决定（主角做出选择，下一章展开）"]},
+            "breather": {"label": "高潮后是否有喘息章", "placeholder": "", "type": "select", "options": ["必有日常/过渡章调剂", "直接推进，不废话", "偶尔，看情况"]},
+        }
+    },
+    "characters": {
+        "label": "⑤ 我的人物观",
+        "fields": {
+            "protagonist_style": {"label": "主角人设", "placeholder": "有缺陷的英雄 / 成长型 / 反英雄", "type": "select", "options": ["有缺陷的英雄（有弱点但本质好）", "反英雄（灰色地带，亦正亦邪）", "成长型（从弱到强，伴随成长曲线）", "立体传统主角"]},
+            "antagonist_style": {"label": "反派风格", "placeholder": "有魅力的反派 / 立场不同 / 纯粹恶", "type": "select", "options": ["有魅力的反派（读者会同情）", "立场不同没有对错", "纯粹恶（简单直接的威胁）"]},
+            "character_depth": {"label": "配角深度", "placeholder": "每个人都有故事 / 配角服务主线", "type": "select", "options": ["每个人都有完整故事", "配角服务于主线", "只有主角重要"]},
+        }
+    },
+    "emotion": {
+        "label": "⑥ 我的情感调色盘",
+        "fields": {
+            "dominant_tone": {"label": "主情绪基调", "placeholder": "热血 / 苍凉 / 温暖 / 悬疑 / 爽", "type": "select", "options": ["热血燃", "苍凉悲", "温暖治愈", "悬疑惊悚", "爽快直接"]},
+            "humor": {"label": "幽默程度", "placeholder": "冷幽默 / 无厘头 / 没有 / 人物自带喜感", "type": "select", "options": ["冷幽默（旁观者的毒舌）", "无厘头（意想不到的搞笑）", "没有幽默（偏严肃）", "人物自带喜感"]},
+            "romance": {"label": "感情线", "placeholder": "有但克制 / 主线 / 不重要", "type": "select", "options": ["有但克制（暗线为主）", "是主线之一", "不重要", "多角纠葛"]},
+        }
+    },
+    "ambition": {
+        "label": "⑦ 我的野心",
+        "fields": {
+            "scale": {"label": "故事格局", "placeholder": "一个人 / 一群人 / 一个世界", "type": "select", "options": ["一个人的故事", "一群人的史诗", "一个世界的编年史"]},
+            "reader_promise": {"label": "给读者的承诺", "placeholder": "如：60%爽文节奏+30%深度思考+10%泪点"},
+            "personal_stakes": {"label": "我为什么非得写这个故事", "placeholder": "这个故事对你来说意味着什么？"},
+        }
+    },
+    "boundaries": {
+        "label": "⑧ 我的底线",
+        "fields": {
+            "never": {"label": "我绝不会写", "placeholder": "如：主角光环随意解围、女性角色工具化"},
+            "hard_no_phrases": {"label": "绝不用这些表达", "placeholder": "如：他的眼中闪过一丝、谁也没想到、微微一笑"},
+        }
+    },
+}
+
+
+def get_persona_template() -> dict:
+    """获取作者人设模板"""
+    return {
+        "dimensions": AUTHOR_PERSONA_DIMENSIONS,
+        "tips": [
+            "不用每一项都填——先填前 4 项就够了",
+            "写的过程中可以随时回来改，人设跟着你的创作一起成长",
+            "填的越具体，AI 生成的文字越像'你'在写",
+        ],
+    }
+
+
+def build_persona_context(persona_data: dict) -> str:
+    """将人设转化为 AI 创作上下文"""
+    lines = ["## 🖊️ 作者人设约束\n"]
+    map_labels = {
+        "identity": ("我是谁", ["pen_name", "author_type", "manifesto"]),
+        "creative_domain": ("创作领域", ["primary_genre", "eternal_themes"]),
+        "language": ("语言习惯", ["sentence_style", "dialogue_style", "narrative_voice"]),
+        "rhythm": ("节奏", ["chapter_words", "closing_style"]),
+        "emotion": ("情感基调", ["dominant_tone"]),
+    }
+    for dim_key, (label, fields) in map_labels.items():
+        dim = persona_data.get(dim_key, {})
+        items = []
+        for f in fields:
+            val = dim.get(f, "")
+            if val:
+                items.append(val)
+        if items:
+            lines.append(f"**{label}**: {'；'.join(items)}")
+
+    # 禁用词
+    forbidden = persona_data.get("language", {}).get("forbidden_words", "")
+    if forbidden:
+        lines.append(f"\n**禁用词/句式**: {forbidden}")
+
+    # 底线
+    never = persona_data.get("boundaries", {}).get("never", "")
+    hard_no = persona_data.get("boundaries", {}).get("hard_no_phrases", "")
+    if never or hard_no:
+        lines.append(f"\n**创作底线**: {never}")
+        if hard_no:
+            lines.append(f"**禁用表达**: {hard_no}")
+
+    return "\n".join(lines)
+
+
+def save_persona(project_root: str, persona_data: dict) -> dict:
+    """保存作者人设到项目"""
+    from pathlib import Path
+    import yaml
+    root = Path(project_root)
+    persona_dir = root / "data" / "author"
+    persona_dir.mkdir(parents=True, exist_ok=True)
+    filepath = persona_dir / "persona.yaml"
+    filepath.write_text(yaml.dump(persona_data, allow_unicode=True, default_flow_style=False), encoding="utf-8")
+    return {"ok": True, "path": str(filepath.relative_to(root)), "context": build_persona_context(persona_data)}
+
+
+def load_persona(project_root: str) -> dict:
+    """加载已保存的作者人设"""
+    from pathlib import Path
+    import yaml
+    root = Path(project_root)
+    filepath = root / "data" / "author" / "persona.yaml"
+    if not filepath.exists():
+        return {"loaded": False, "template": AUTHOR_PERSONA_DIMENSIONS}
+    with filepath.open(encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    return {"loaded": True, "data": data, "context": build_persona_context(data)}

@@ -37,6 +37,9 @@ from .handlers import (
     handle_epub_extract,
     handle_ai_dissect,
     handle_ai_imitate,
+    handle_persona_template,
+    handle_persona_save,
+    handle_persona_load,
 )
 
 # (处理器, 是否需要项目已初始化)
@@ -66,6 +69,9 @@ POST_ROUTES: dict[str, tuple[Any, bool]] = {
     "/api/epub":              (handle_epub_extract,    False),
     "/api/ai_dissect":        (handle_ai_dissect,      False),
     "/api/ai_imitate":        (handle_ai_imitate,      False),
+    "/api/persona/template":  (handle_persona_template, False),
+    "/api/persona/save":      (handle_persona_save,    False),
+    "/api/persona/load":      (handle_persona_load,    False),
     "/api/write":             (handle_write,           True),
     "/api/review":            (handle_review,          True),
     "/api/sync":              (handle_sync,            True),

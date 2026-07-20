@@ -484,3 +484,20 @@ def handle_ai_imitate(app, params: dict[str, Any]) -> dict[str, Any]:
         return ai_style_imitate(ref_text, premise, "", client)
     except ImportError:
         return {"error": "需要安装 openai 库: pip install openai"}
+
+def handle_persona_template(app, _params=None) -> dict:
+    """获取作者人设模板"""
+    from tools.creation_engine import get_persona_template
+    return get_persona_template()
+
+
+def handle_persona_save(app, params: dict[str, Any]) -> dict:
+    """保存作者人设"""
+    from tools.creation_engine import save_persona
+    return save_persona(str(app.project_root), params.get("persona", {}))
+
+
+def handle_persona_load(app, _params=None) -> dict:
+    """加载作者人设"""
+    from tools.creation_engine import load_persona
+    return load_persona(str(app.project_root))

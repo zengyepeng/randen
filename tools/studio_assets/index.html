@@ -414,6 +414,18 @@
           <button class="ed-done primary-button" type="button">✓ 完成引导</button>
         </div>
       </div>
+      <!-- Step 6: 作者人设 -->
+      <div class="ed-step" data-step="6">
+        <h3>⑥ 设定作者人设（让AI写出"你"的风格）</h3>
+        <p class="ed-desc">9维创作人格——填得越具体,AI越像你在写。不用全填,前4项够了。</p>
+        <div id="ew-persona-form" class="ew-persona-grid">
+          <div class="ew-persona-loading">加载中…</div>
+        </div>
+        <div class="ed-actions">
+          <button class="ed-prev" data-prev="5">← 上一步</button>
+          <button id="ew-persona-save" class="ed-next" type="button">💾 保存人设到项目</button>
+        </div>
+      </div>
     </div>
   </dialog>
 
@@ -424,12 +436,13 @@
       <h2>🏮 创作向导</h2>
       <button id="ew-view-reports" class="quiet-button" type="button" style="font-size:.75rem" title="查看已保存的创作报告">📂 浏览报告</button>
       <button id="ew-export-report" class="quiet-button" type="button" style="font-size:.75rem" title="导出完整创作准备报告">📥 导出报告</button>
-      <div class="ed-steps" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1">
+      <div class="ed-steps" role="progressbar" aria-valuemin="1" aria-valuemax="6" aria-valuenow="1">
         <span class="ed-dot active">1</span><span class="ed-line"></span>
         <span class="ed-dot">2</span><span class="ed-line"></span>
         <span class="ed-dot">3</span><span class="ed-line"></span>
         <span class="ed-dot">4</span><span class="ed-line"></span>
-        <span class="ed-dot">5</span>
+        <span class="ed-dot">5</span><span class="ed-line"></span>
+        <span class="ed-dot">6</span>
       </div>
       <button id="engine-dialog-close" class="icon-button" type="button" aria-label="关闭">×</button>
     </div>
@@ -509,6 +522,18 @@
         <div class="ed-actions">
           <button class="ed-prev" data-prev="4">← 上一步</button>
           <button class="ed-done primary-button" type="button">✓ 完成引导</button>
+        </div>
+      </div>
+      <!-- Step 6: 作者人设 -->
+      <div class="ed-step" data-step="6">
+        <h3>⑥ 设定作者人设（让AI写出"你"的风格）</h3>
+        <p class="ed-desc">9维创作人格——填得越具体,AI越像你在写。不用全填,前4项够了。</p>
+        <div id="ew-persona-form" class="ew-persona-grid">
+          <div class="ew-persona-loading">加载中…</div>
+        </div>
+        <div class="ed-actions">
+          <button class="ed-prev" data-prev="5">← 上一步</button>
+          <button id="ew-persona-save" class="ed-next" type="button">💾 保存人设到项目</button>
         </div>
       </div>
     </div>
