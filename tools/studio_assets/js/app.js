@@ -44,12 +44,13 @@ async function boot() {
   const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   applyTheme(storedTheme || (systemDark ? "dark" : "light"));
   bindEvents();
+  // Always release busy state after bindEvents — don't wait for workspace
+  const app = document.querySelector("#app");
+  if (app) app.setAttribute("aria-busy", "false");
   try {
     await loadWorkspace();
     await routeFromLocation();
   } catch (error) {
-    const app = document.querySelector("#app");
-    if (app) app.setAttribute("aria-busy", "false");
     showToast(error.message, true);
   }
 }
