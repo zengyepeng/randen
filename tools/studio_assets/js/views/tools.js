@@ -115,6 +115,15 @@ export function initCreationWizard() {
   // Step 4: Opening
   
   // Export full report button
+  
+  $("#ew-view-reports")?.addEventListener("click", async () => {
+    try {
+      const { switchView } = await import("../router.js");
+      switchView("story", true);
+      $("#engine-dialog")?.close();
+    } catch(_) {}
+  });
+
   $("#ew-export-report")?.addEventListener("click", () => {
     const parts = [];
     parts.push('# 创作准备报告\n');
@@ -241,6 +250,29 @@ function _initFileUpload() {
   });
 
   // Dissect single book (deep)
+  
+  // AI 深度拆书
+  $("#ew-ai-dissect")?.addEventListener("click", async () => {
+    const text = $("#ew-dissect-text")?.value || "";
+    const out = $("#ew-dissect-out");
+    if (text.length < 200) { if (out) _ewErr(out, new Error("AI分析需要至少200字正文")); return; }
+    if (out) { out.hidden = false; out.textContent = "🤖 AI 深度分析中（约10秒）…"; }
+    try {
+      const data = await _ewPost("/api/ai_dissect", { text, title: $("#ew-dissect-title")?.value || "未命名" });
+      if (out) out.innerHTML = `
+<div class="ew-item">
+  <p><strong>🤖 AI 深度分析: ${_esc(data.title)}</strong> ${data.note||''}</p>
+  ${data.hook_quality ? `<p>🎣 钩子: ${data.hook_quality}/10 — ${_esc(data.hook_reason||'')}</p>` : ''}
+  ${data.golden_finger ? `<p>⚡ 金手指: ${_esc(data.golden_finger)}</p>` : ''}
+  ${data.pacing_score ? `<p>🎵 节奏: ${data.pacing_score}/10</p>` : ''}
+  ${data.character_appeal ? `<p>👤 人设: ${_esc(data.character_appeal)}</p>` : ''}
+  ${data.market_potential ? `<p>📊 市场: ${_esc(data.market_potential)}</p>` : ''}
+  ${data.writing_quality ? `<p>✍️ 文笔: ${data.writing_quality}/10</p>` : ''}
+  ${data.improvement ? `<p class="ew-tip">💡 ${_esc(data.improvement)}</p>` : ''}
+</div>`;
+    } catch (e) { if (out) _ewErr(out, e); }
+  });
+
   $("#ew-dissect-new")?.addEventListener("click", async () => {
     const text = textarea?.value || "";
     const title = $("#ew-dissect-title")?.value || "";

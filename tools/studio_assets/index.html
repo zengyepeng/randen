@@ -298,76 +298,6 @@
               </form>
               <p id="create-status" class="form-status" role="status"></p>
             </section>
-            <!-- ═══ 创作引擎 ═══ -->
-            <section class="tool-card tool-card-wide engine-section">
-              <div class="subsection-heading"><h2>🏮 创作引擎</h2><span>扫榜 → 拆书 → 脑洞 → 开篇</span></div>
-              <div class="engine-list" role="list">
-                <!-- ① 扫榜 -->
-                <article class="engine-row" data-engine="market" role="listitem">
-                  <button class="engine-toggle" type="button" aria-expanded="false">
-                    <span class="engine-num">1</span>
-                    <span class="engine-title">扫榜分析</span>
-                    <span class="engine-summary">看赛道，找流量大竞争小的方向</span>
-                    <span class="engine-chevron">▸</span>
-                  </button>
-                  <div class="engine-body" hidden>
-                    <select id="engine-platform" class="engine-select">
-                      <option value="默认">全平台通用</option><option value="番茄小说">番茄小说</option>
-                      <option value="起点中文网">起点中文网</option><option value="知乎盐言">知乎盐言</option>
-                    </select>
-                    <button id="engine-market" class="engine-run">分析</button>
-                    <div id="engine-market-result" class="engine-out" hidden></div>
-                  </div>
-                </article>
-                <!-- ② 拆书 -->
-                <article class="engine-row" data-engine="dissect" role="listitem">
-                  <button class="engine-toggle" type="button" aria-expanded="false">
-                    <span class="engine-num">2</span>
-                    <span class="engine-title">拆书对标</span>
-                    <span class="engine-summary">拆参考作品的爽点·金手指·钩子结构</span>
-                    <span class="engine-chevron">▸</span>
-                  </button>
-                  <div class="engine-body" hidden>
-                    <input id="engine-dissect-title" class="engine-input" placeholder="作品名（可选）">
-                    <textarea id="engine-dissect-text" class="engine-textarea" rows="5" placeholder="粘贴参考作品正文片段…"></textarea>
-                    <button id="engine-dissect" class="engine-run">拆解</button>
-                    <div id="engine-dissect-result" class="engine-out" hidden></div>
-                  </div>
-                </article>
-                <!-- ③ 脑洞 -->
-                <article class="engine-row" data-engine="idea" role="listitem">
-                  <button class="engine-toggle" type="button" aria-expanded="false">
-                    <span class="engine-num">3</span>
-                    <span class="engine-title">脑洞完善</span>
-                    <span class="engine-summary">一句话灵感展开为核心设定体系</span>
-                    <span class="engine-chevron">▸</span>
-                  </button>
-                  <div class="engine-body" hidden>
-                    <textarea id="engine-idea-premise" class="engine-textarea" rows="2" placeholder="例：程序员穿越修真世界，靠写代码修仙…"></textarea>
-                    <button id="engine-idea" class="engine-run">完善</button>
-                    <div id="engine-idea-result" class="engine-out" hidden></div>
-                  </div>
-                </article>
-                <!-- ④ 开篇 -->
-                <article class="engine-row" data-engine="opening" role="listitem">
-                  <button class="engine-toggle" type="button" aria-expanded="false">
-                    <span class="engine-num">4</span>
-                    <span class="engine-title">开篇诊断</span>
-                    <span class="engine-summary">7维度检查钩子·冲突·节奏·情绪</span>
-                    <span class="engine-chevron">▸</span>
-                  </button>
-                  <div class="engine-body" hidden>
-                    <textarea id="engine-opening-text" class="engine-textarea" rows="5" placeholder="粘贴第一章开篇内容…"></textarea>
-                    <button id="engine-opening" class="engine-run">诊断</button>
-                    <div id="engine-opening-result" class="engine-out" hidden></div>
-                  </div>
-                </article>
-              </div>
-              <details class="engine-faq-wrap">
-                <summary>💡 新人常见问题（12问）</summary>
-                <div id="engine-faq" class="engine-faq-inner"></div>
-              </details>
-            </section>
             <section class="tool-card tool-card-wide">
               <div class="subsection-heading"><h2>风格与设定来源包</h2><span id="source-count">0</span></div>
               <form id="source-form" class="compact-form source-form">
@@ -537,7 +467,8 @@
   <dialog id="engine-dialog" class="engine-dialog">
     <div class="ed-header">
       <h2>🏮 创作向导</h2>
-      <button id="ew-export-report" class="quiet-button" type="button" style="font-size:.75rem;margin-left:auto" title="导出完整创作准备报告">📥 导出报告</button>
+      <button id="ew-view-reports" class="quiet-button" type="button" style="font-size:.75rem" title="查看已保存的创作报告">📂 浏览报告</button>
+      <button id="ew-export-report" class="quiet-button" type="button" style="font-size:.75rem" title="导出完整创作准备报告">📥 导出报告</button>
       <div class="ed-steps" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1">
         <span class="ed-dot active">1</span><span class="ed-line"></span>
         <span class="ed-dot">2</span><span class="ed-line"></span>
@@ -576,7 +507,7 @@
             </div>
             <input id="ew-dissect-title" class="ew-input" placeholder="书名（可选）">
             <textarea id="ew-dissect-text" class="ew-textarea" rows="6" placeholder="或直接粘贴正文…"></textarea>
-            <button id="ew-dissect-new" class="ew-run">拆解本书</button>
+            <button id="ew-dissect-new" class="ew-run">拆解本书</button><button id="ew-ai-dissect" class="ew-run" style="margin-left:8px">🤖 AI 深度分析</button>
             <div id="ew-dissect-out" class="ew-out" hidden></div>
           </div>
           <aside class="ew-dissect-sidebar">
